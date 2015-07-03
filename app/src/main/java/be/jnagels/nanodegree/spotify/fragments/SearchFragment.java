@@ -20,14 +20,14 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import kaaes.spotify.webapi.android.models.ArtistsPager;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-import be.jnagels.nanodegree.spotify.myapplication.R;
+import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.adapters.ArtistsAdapter;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * Created by jelle on 03/07/15.

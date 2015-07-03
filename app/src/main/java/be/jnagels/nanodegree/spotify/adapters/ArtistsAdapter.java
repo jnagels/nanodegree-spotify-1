@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import be.jnagels.nanodegree.spotify.myapplication.R;
+import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 
 /**

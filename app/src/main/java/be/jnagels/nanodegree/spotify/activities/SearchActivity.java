@@ -2,7 +2,7 @@ package be.jnagels.nanodegree.spotify.activities;
 
 import android.os.Bundle;
 
-import be.jnagels.nanodegree.spotify.myapplication.R;
+import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.fragments.SearchFragment;
 
 /**

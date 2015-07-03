@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.0 rc2"
 
     defaultConfig {
-        applicationId "spotify.nanodegree.jnagels.be.myapplication"
+        applicationId "be.jnagels.nanodegree.spotify"
         minSdkVersion 19
         targetSdkVersion 22
         versionCode 1
