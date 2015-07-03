@@ -1,5 +1,5 @@
 <manifest
-    package="spotify.nanodegree.jnagels.be.myapplication"
+    package="be.jnagels.nanodegree.spotify"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />

@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication;
+package be.jnagels.nanodegree.spotify.myapplication;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

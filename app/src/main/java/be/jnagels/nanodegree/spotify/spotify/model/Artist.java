@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.spotify.model;
+package be.jnagels.nanodegree.spotify.spotify.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

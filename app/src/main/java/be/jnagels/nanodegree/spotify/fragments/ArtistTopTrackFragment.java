@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.fragments;
+package be.jnagels.nanodegree.spotify.fragments;
 
 import android.support.v4.app.Fragment;
 

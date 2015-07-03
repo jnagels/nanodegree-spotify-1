@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.activities;
+package be.jnagels.nanodegree.spotify.activities;
 
 import android.support.v7.app.AppCompatActivity;
 

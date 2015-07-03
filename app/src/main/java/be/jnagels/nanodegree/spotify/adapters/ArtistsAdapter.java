@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.adapters;
+package be.jnagels.nanodegree.spotify.adapters;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import spotify.nanodegree.jnagels.be.myapplication.R;
-import spotify.nanodegree.jnagels.be.myapplication.spotify.model.Artist;
+import be.jnagels.nanodegree.spotify.myapplication.R;
+import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 
 /**
  * Created by jelle on 03/07/15.

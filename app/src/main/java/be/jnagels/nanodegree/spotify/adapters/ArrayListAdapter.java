@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.adapters;
+package be.jnagels.nanodegree.spotify.adapters;
 
 import android.support.v7.widget.RecyclerView;
 

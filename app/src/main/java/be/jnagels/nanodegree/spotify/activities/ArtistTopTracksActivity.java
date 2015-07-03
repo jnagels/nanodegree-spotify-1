@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.activities;
+package be.jnagels.nanodegree.spotify.activities;
 
 /**
  * Created by jelle on 03/07/15.

@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.fragments;
+package be.jnagels.nanodegree.spotify.fragments;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import spotify.nanodegree.jnagels.be.myapplication.R;
-import spotify.nanodegree.jnagels.be.myapplication.adapters.ArtistsAdapter;
-import spotify.nanodegree.jnagels.be.myapplication.spotify.SpotifyCallback;
-import spotify.nanodegree.jnagels.be.myapplication.spotify.SpotifyInstance;
-import spotify.nanodegree.jnagels.be.myapplication.spotify.model.Artist;
+import be.jnagels.nanodegree.spotify.myapplication.R;
+import be.jnagels.nanodegree.spotify.adapters.ArtistsAdapter;
+import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
+import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
+import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 
 /**
  * Created by jelle on 03/07/15.
