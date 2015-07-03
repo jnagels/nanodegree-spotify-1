@@ -29,7 +29,7 @@ import retrofit.client.Response;
 /**
  * Created by jelle on 03/07/15.
  */
-public class ArtistTopTrackFragment extends Fragment
+public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.OnTrackClickListener
 {
 	public final static String param_artist = "artist";
 
@@ -66,6 +66,8 @@ public class ArtistTopTrackFragment extends Fragment
 		final View view = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 		ButterKnife.bind(this, view);
 
+		this.adapter.setOnTrackClickListener(this);
+
 		this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
@@ -73,8 +75,16 @@ public class ArtistTopTrackFragment extends Fragment
 
 		this.fetchTopTracks();
 
-
 		return view;
+	}
+
+	@Override
+	public void onDestroyView()
+	{
+		super.onDestroyView();
+		this.callback.cancel();
+		this.adapter.setOnTrackClickListener(null);
+		ButterKnife.unbind(this);
 	}
 
 	@Override
@@ -102,10 +112,9 @@ public class ArtistTopTrackFragment extends Fragment
 	}
 
 	@Override
-	public void onDestroy()
+	public void onTrackClick(Track track)
 	{
-		super.onDestroy();
-		this.callback.cancel();
+		Toast.makeText(getActivity(), "This will open the player in Stage 2!", Toast.LENGTH_SHORT).show();
 	}
 
 	private SpotifyCallback<Tracks> callback = new SpotifyCallback<Tracks>() {

@@ -22,8 +22,20 @@ import butterknife.ButterKnife;
  */
 public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHolder>
 {
+	public interface OnTrackClickListener
+	{
+		void onTrackClick(Track track);
+	}
+
+	private OnTrackClickListener onTrackClickListener;
+
 	public TracksAdapter()
 	{
+	}
+
+	public void setOnTrackClickListener(OnTrackClickListener onTrackClickListener)
+	{
+		this.onTrackClickListener = onTrackClickListener;
 	}
 
 	@Override
@@ -68,10 +80,24 @@ public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHol
 		@Bind(R.id.track)
 		TextView track;
 
-		public ViewHolder(View itemView)
+		public ViewHolder(final View itemView)
 		{
 			super(itemView);
 			ButterKnife.bind(this, itemView);
+
+			itemView.setOnClickListener(
+					new View.OnClickListener()
+					{
+						@Override
+						public void onClick(View v)
+						{
+							if (onTrackClickListener != null)
+							{
+								onTrackClickListener.onTrackClick(getItem(getAdapterPosition()));
+							}
+						}
+					}
+			);
 		}
 	}
 }

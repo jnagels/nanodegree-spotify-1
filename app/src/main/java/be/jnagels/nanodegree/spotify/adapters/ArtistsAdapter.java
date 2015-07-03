@@ -80,18 +80,18 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 		{
 			super(itemView);
 			ButterKnife.bind(this, itemView);
-			itemView.setOnClickListener(new View.OnClickListener()
-										{
-											@Override
-											public void onClick(View v)
-											{
-												if (onArtistClickListener != null)
-												{
-													final Artist artist = getItem(getAdapterPosition());
-													onArtistClickListener.onArtistClick(artist);
-												}
-											}
-										}
+			itemView.setOnClickListener(
+					new View.OnClickListener()
+					{
+						@Override
+						public void onClick(View v)
+						{
+							if (onArtistClickListener != null)
+							{
+								onArtistClickListener.onArtistClick(getItem(getAdapterPosition()));
+							}
+						}
+					}
 			);
 		}
 	}

@@ -99,6 +99,13 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	}
 
 	@Override
+	public void onDestroyView()
+	{
+		super.onDestroyView();
+		ButterKnife.unbind(this);
+	}
+
+	@Override
 	public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
