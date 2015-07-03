@@ -3,6 +3,7 @@ package be.jnagels.nanodegree.spotify.adapters;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,9 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import be.jnagels.nanodegree.spotify.R;
+import be.jnagels.nanodegree.spotify.spotify.model.Track;
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by jelle on 03/07/15.
@@ -37,10 +38,10 @@ public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHol
 		final Context context = holder.itemView.getContext();
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
 
-		if (!item.album.images.isEmpty())
+		if (!TextUtils.isEmpty(item.artUrl))
 		{
 			Picasso.with(context)
-					.load(Uri.parse(item.album.images.get(0).url))
+					.load(Uri.parse(item.artUrl))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
@@ -52,8 +53,8 @@ public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHol
 			holder.preview.setImageResource(R.drawable.placeholder_empty);
 		}
 
-		holder.track.setText(item.name);
-		holder.album.setText(item.album.name);
+		holder.track.setText(item.track);
+		holder.album.setText(item.album);
 	}
 
 	public final class ViewHolder extends RecyclerView.ViewHolder

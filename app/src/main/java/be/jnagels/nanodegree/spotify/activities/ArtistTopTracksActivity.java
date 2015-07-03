@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 
-import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.fragments.ArtistTopTrackFragment;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 
@@ -20,8 +19,6 @@ public class ArtistTopTracksActivity extends AbstractActivity
 	{
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_top_tracks);
-
 		if (getSupportFragmentManager().findFragmentByTag("top_tracks") == null)
 		{
 			final Bundle args = new Bundle();
@@ -30,7 +27,7 @@ public class ArtistTopTracksActivity extends AbstractActivity
 			final Fragment fragment = new ArtistTopTrackFragment();
 			fragment.setArguments(args);
 			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.placeholder_detail, fragment, "top_tracks")
+					.replace(android.R.id.content, fragment, "top_tracks")
 					.commit();
 		}
 

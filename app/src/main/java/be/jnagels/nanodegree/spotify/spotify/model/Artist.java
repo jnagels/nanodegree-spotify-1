@@ -9,7 +9,7 @@ import android.os.Parcelable;
 public class Artist implements Parcelable
 {
 	public final String id;
-	public final String previewUrl;
+	public final String artUrl;
 	public final String name;
 
 	public Artist(kaaes.spotify.webapi.android.models.Artist artist)
@@ -19,11 +19,11 @@ public class Artist implements Parcelable
 
 		if (artist.images.isEmpty())
 		{
-			this.previewUrl = null;
+			this.artUrl = null;
 		}
 		else
 		{
-			this.previewUrl = artist.images.get(0).url;
+			this.artUrl = artist.images.get(0).url;
 		}
 	}
 
@@ -37,14 +37,14 @@ public class Artist implements Parcelable
 	public void writeToParcel(Parcel dest, int flags)
 	{
 		dest.writeString(this.id);
-		dest.writeString(this.previewUrl);
+		dest.writeString(this.artUrl);
 		dest.writeString(this.name);
 	}
 
 	protected Artist(Parcel in)
 	{
 		this.id = in.readString();
-		this.previewUrl = in.readString();
+		this.artUrl = in.readString();
 		this.name = in.readString();
 	}
 

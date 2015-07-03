@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/default_row_height"
-                xmlns:tools="http://schemas.android.com/tools"
+                android:background="?android:attr/selectableItemBackground"
                 android:orientation="vertical"
                 android:padding="8dp">
 
@@ -23,27 +24,27 @@
         android:id="@+id/track"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/center"
         android:layout_alignParentTop="true"
         android:layout_marginBottom="2dp"
-        android:layout_above="@+id/center"
         android:layout_toRightOf="@+id/preview"
+        android:ellipsize="end"
         android:gravity="bottom|left"
-        tools:text="Track name"
         android:singleLine="true"
-        android:ellipsize="end"/>
+        tools:text="Track name"/>
 
     <TextView
         android:id="@+id/album"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="2dp"
-        android:layout_below="@+id/center"
         android:layout_alignLeft="@+id/track"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/center"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
         android:gravity="top|left"
-        tools:text="Album name"
         android:singleLine="true"
-        android:ellipsize="end"/>
+        tools:text="Album name"/>
 
 
 </RelativeLayout>

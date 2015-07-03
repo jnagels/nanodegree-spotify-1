@@ -18,6 +18,7 @@ import be.jnagels.nanodegree.spotify.adapters.TracksAdapter;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
+import be.jnagels.nanodegree.spotify.spotify.model.Track;
 import be.jnagels.nanodegree.spotify.utils.HorizontalDividerItemDecoration;
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -50,6 +51,12 @@ public class ArtistTopTrackFragment extends Fragment
 
 		this.artist = getArguments().getParcelable(param_artist);
 		this.adapter = new TracksAdapter();
+
+		if (savedInstanceState != null)
+		{
+			final ArrayList<Track> tracks = savedInstanceState.getParcelableArrayList("tracks");
+			this.adapter.setData(tracks);
+		}
 	}
 
 	@Nullable
@@ -70,6 +77,13 @@ public class ArtistTopTrackFragment extends Fragment
 		return view;
 	}
 
+	@Override
+	public void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		outState.putParcelableArrayList("tracks", this.adapter.getData());
+	}
+
 	private void fetchTopTracks()
 	{
 		progressView.setVisibility(View.VISIBLE);
@@ -78,6 +92,13 @@ public class ArtistTopTrackFragment extends Fragment
 		final HashMap<String,Object> parameters = new HashMap<>();
 		parameters.put("country", "BE");
 		SpotifyInstance.get(getActivity()).getArtistTopTrack(this.artist.id, parameters, this.callback);
+	}
+
+	private void onDataLoaded(ArrayList<Track> tracks)
+	{
+		progressView.setVisibility(View.GONE);
+		recyclerView.setVisibility(View.VISIBLE);
+		adapter.setData(tracks);
 	}
 
 	@Override
@@ -91,10 +112,12 @@ public class ArtistTopTrackFragment extends Fragment
 		@Override
 		protected void onSuccess(Tracks data, Response response)
 		{
-			progressView.setVisibility(View.GONE);
-			recyclerView.setVisibility(View.VISIBLE);
-			adapter.setData(new ArrayList<>(data.tracks));
-
+			final ArrayList<Track> tracks = new ArrayList<>();
+			for(kaaes.spotify.webapi.android.models.Track track : data.tracks)
+			{
+				tracks.add(new Track(track));
+			}
+			onDataLoaded(tracks);
 		}
 
 		@Override

@@ -50,10 +50,10 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
 		final Context context = holder.itemView.getContext();
 
-		if (!TextUtils.isEmpty(item.previewUrl))
+		if (!TextUtils.isEmpty(item.artUrl))
 		{
 			Picasso.with(context)
-					.load(Uri.parse(item.previewUrl))
+					.load(Uri.parse(item.artUrl))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
