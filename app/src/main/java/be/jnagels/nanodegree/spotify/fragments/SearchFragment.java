@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -25,6 +26,7 @@ import be.jnagels.nanodegree.spotify.adapters.ArtistsAdapter;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
+import be.jnagels.nanodegree.spotify.utils.HorizontalDividerItemDecoration;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -77,6 +79,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 
 		this.recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
 		this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
 
 		this.editText = (EditText) view.findViewById(R.id.edittext);
@@ -149,6 +152,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		if (data.size() == 0)
 		{
 			this.adapter.setData(null);
+			Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
 		}
 		else
 		{
