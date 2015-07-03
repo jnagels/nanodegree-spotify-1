@@ -18,16 +18,16 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.List;
+import java.util.ArrayList;
 
-import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import spotify.nanodegree.jnagels.be.myapplication.R;
 import spotify.nanodegree.jnagels.be.myapplication.adapters.ArtistsAdapter;
-import spotify.nanodegree.jnagels.be.myapplication.controller.SpotifyCallback;
-import spotify.nanodegree.jnagels.be.myapplication.controller.SpotifyInstance;
+import spotify.nanodegree.jnagels.be.myapplication.spotify.SpotifyCallback;
+import spotify.nanodegree.jnagels.be.myapplication.spotify.SpotifyInstance;
+import spotify.nanodegree.jnagels.be.myapplication.spotify.model.Artist;
 
 /**
  * Created by jelle on 03/07/15.
@@ -36,10 +36,13 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 {
 	private final static int MSG_SEARCH = 0;
 
+	private final static long SEARCH_DELAY = 500l;
+
 	//data
 	private MyHandler handler = new MyHandler();
 	private ArtistsAdapter adapter;
 	private SearchCallback callback;
+	private String query;
 
 	//views
 	private RecyclerView recyclerView;
@@ -54,6 +57,14 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		this.adapter = new ArtistsAdapter();
 		this.adapter.setOnArtistClickListener(this);
 		this.callback = new SearchCallback();
+
+		if (savedInstanceState != null)
+		{
+			this.query = savedInstanceState.getString("query");
+
+			final ArrayList<Artist> data = savedInstanceState.getParcelableArrayList("data");
+			this.adapter.setData(data);
+		}
 	}
 
 	@Nullable
@@ -69,10 +80,24 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		this.recyclerView.setAdapter(this.adapter);
 
 		this.editText = (EditText) view.findViewById(R.id.edittext);
+
+		if (!TextUtils.isEmpty(this.query))
+		{
+			this.editText.setText(this.query);
+		}
+
 		this.editText.setOnEditorActionListener(this);
 		this.editText.addTextChangedListener(this);
 
 		return view;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		outState.putString("query", this.query);
+		outState.putParcelableArrayList("data", this.adapter.getData());
 	}
 
 	/**
@@ -81,6 +106,12 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	private void searchApi()
 	{
 		final String query = this.editText.getText().toString();
+		if (TextUtils.equals(this.query, query))
+		{
+			//already searching for this, no need to query the api again.
+			return ;
+		}
+		this.query = query;
 		this.adapter.setData(null);
 
 		if (TextUtils.isEmpty(query))
@@ -110,7 +141,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	 * Data was loaded from the spotify apis
 	 * @param data
 	 */
-	private void onDataLoaded(List<Artist> data)
+	private void onDataLoaded(ArrayList<Artist> data)
 	{
 		this.progressView.setVisibility(View.GONE);
 		this.recyclerView.setVisibility(View.VISIBLE);
@@ -165,7 +196,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	public void afterTextChanged(Editable s)
 	{
 		//start searching, but only after 1,5 seconds. This can be canceled.
-		this.handler.sendEmptyMessageDelayed(MSG_SEARCH, 750l);
+		this.handler.sendEmptyMessageDelayed(MSG_SEARCH, SEARCH_DELAY);
 	}
 
 	/**
@@ -176,7 +207,13 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		@Override
 		protected void onSuccess(ArtistsPager data, Response response)
 		{
-			onDataLoaded(data.artists.items);
+			//convert to own domain objects to be able to "parcelable" them :)
+			final ArrayList<Artist> artists = new ArrayList<>();
+			for(kaaes.spotify.webapi.android.models.Artist artist : data.artists.items)
+			{
+				artists.add(new Artist(artist));
+			}
+			onDataLoaded(artists);
 		}
 
 		@Override

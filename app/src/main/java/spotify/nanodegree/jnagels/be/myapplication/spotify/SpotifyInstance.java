@@ -1,4 +1,4 @@
-package spotify.nanodegree.jnagels.be.myapplication.controller;
+package spotify.nanodegree.jnagels.be.myapplication.spotify;
 
 import android.content.Context;
 

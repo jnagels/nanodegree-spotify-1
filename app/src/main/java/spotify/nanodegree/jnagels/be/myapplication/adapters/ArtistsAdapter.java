@@ -2,6 +2,7 @@ package spotify.nanodegree.jnagels.be.myapplication.adapters;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +11,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import kaaes.spotify.webapi.android.models.Artist;
 import spotify.nanodegree.jnagels.be.myapplication.R;
+import spotify.nanodegree.jnagels.be.myapplication.spotify.model.Artist;
 
 /**
  * Created by jelle on 03/07/15.
@@ -45,10 +46,10 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 	{
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
 
-		if (!item.images.isEmpty())
+		if (!TextUtils.isEmpty(item.getPreviewUrl()))
 		{
 			Picasso.with(holder.itemView.getContext())
-					.load(Uri.parse(item.images.get(0).url))
+					.load(Uri.parse(item.getPreviewUrl()))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
@@ -59,7 +60,7 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 			holder.preview.setImageResource(R.drawable.placeholder_empty);
 		}
 
-		holder.title.setText(item.name);
+		holder.title.setText(item.getName());
 	}
 
 	public final class ViewHolder extends RecyclerView.ViewHolder
