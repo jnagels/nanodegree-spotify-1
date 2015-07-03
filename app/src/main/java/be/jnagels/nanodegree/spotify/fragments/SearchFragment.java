@@ -27,6 +27,8 @@ import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 import be.jnagels.nanodegree.spotify.utils.HorizontalDividerItemDecoration;
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -47,9 +49,14 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	private String query;
 
 	//views
-	private RecyclerView recyclerView;
-	private EditText editText;
-	private View progressView;
+	@Bind(R.id.recyclerview)
+	RecyclerView recyclerView;
+
+	@Bind(R.id.edittext)
+	EditText editText;
+
+	@Bind(R.id.progressview)
+	View progressView;
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState)
@@ -74,15 +81,11 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		final View view = inflater.inflate(R.layout.fragment_search, container, false);
+		ButterKnife.bind(this, view);
 
-		this.progressView = view.findViewById(R.id.progressview);
-
-		this.recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
 		this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
-
-		this.editText = (EditText) view.findViewById(R.id.edittext);
 
 		if (!TextUtils.isEmpty(this.query))
 		{
@@ -164,6 +167,10 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	public void onArtistClick(Artist artist)
 	{
 		//open the detail activity here!
+		if (getActivity() instanceof ArtistsAdapter.OnArtistClickListener)
+		{
+			((ArtistsAdapter.OnArtistClickListener) getActivity()).onArtistClick(artist);
+		}
 	}
 
 	@Override

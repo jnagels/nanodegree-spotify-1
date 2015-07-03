@@ -1,5 +1,6 @@
 package be.jnagels.nanodegree.spotify.adapters;
 
+import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -13,6 +14,8 @@ import com.squareup.picasso.Picasso;
 
 import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 /**
  * Created by jelle on 03/07/15.
@@ -45,11 +48,12 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 	protected void onBindViewHolder(ViewHolder holder, Artist item, int position)
 	{
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
+		final Context context = holder.itemView.getContext();
 
-		if (!TextUtils.isEmpty(item.getPreviewUrl()))
+		if (!TextUtils.isEmpty(item.previewUrl))
 		{
-			Picasso.with(holder.itemView.getContext())
-					.load(Uri.parse(item.getPreviewUrl()))
+			Picasso.with(context)
+					.load(Uri.parse(item.previewUrl))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
@@ -57,22 +61,25 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 		}
 		else
 		{
+			Picasso.with(context).cancelRequest(holder.preview);
 			holder.preview.setImageResource(R.drawable.placeholder_empty);
 		}
 
-		holder.title.setText(item.getName());
+		holder.title.setText(item.name);
 	}
 
 	public final class ViewHolder extends RecyclerView.ViewHolder
 	{
+		@Bind(R.id.preview)
 		ImageView preview;
+
+		@Bind(R.id.title)
 		TextView title;
 
 		public ViewHolder(final View itemView)
 		{
 			super(itemView);
-			this.preview = (ImageView) itemView.findViewById(R.id.preview);
-			this.title = (TextView) itemView.findViewById(R.id.title);
+			ButterKnife.bind(this, itemView);
 			itemView.setOnClickListener(new View.OnClickListener()
 										{
 											@Override

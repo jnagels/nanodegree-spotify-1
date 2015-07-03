@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/default_row_height"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/preview"
+        android:layout_width="@dimen/album_preview_size"
+        android:layout_height="@dimen/album_preview_size"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="16dp"/>
+
+    <View
+        android:id="@+id/center"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/track"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="2dp"
+        android:layout_above="@+id/center"
+        android:layout_toRightOf="@+id/preview"
+        android:gravity="bottom|left"
+        tools:text="Track name"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
+    <TextView
+        android:id="@+id/album"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="2dp"
+        android:layout_below="@+id/center"
+        android:layout_alignLeft="@+id/track"
+        android:gravity="top|left"
+        tools:text="Album name"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
+
+</RelativeLayout>

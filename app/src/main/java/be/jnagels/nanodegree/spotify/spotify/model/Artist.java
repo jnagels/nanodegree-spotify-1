@@ -8,34 +8,24 @@ import android.os.Parcelable;
  */
 public class Artist implements Parcelable
 {
-	private String name;
-	private String previewUrl;
+	public final String id;
+	public final String previewUrl;
+	public final String name;
 
-	public Artist(String name, String previewUrl)
+	public Artist(kaaes.spotify.webapi.android.models.Artist artist)
 	{
-		this.name = name;
-		this.previewUrl = previewUrl;
-	}
+		this.id = artist.id;
+		this.name = artist.name;
 
-	public Artist(kaaes.spotify.webapi.android.models.Artist spotifyArtist)
-	{
-		this.name = spotifyArtist.name;
-		if (!spotifyArtist.images.isEmpty())
+		if (artist.images.isEmpty())
 		{
-			this.previewUrl = spotifyArtist.images.get(0).url;
+			this.previewUrl = null;
+		}
+		else
+		{
+			this.previewUrl = artist.images.get(0).url;
 		}
 	}
-
-	public String getName()
-	{
-		return name;
-	}
-
-	public String getPreviewUrl()
-	{
-		return previewUrl;
-	}
-
 
 	@Override
 	public int describeContents()
@@ -46,14 +36,16 @@ public class Artist implements Parcelable
 	@Override
 	public void writeToParcel(Parcel dest, int flags)
 	{
-		dest.writeString(this.name);
+		dest.writeString(this.id);
 		dest.writeString(this.previewUrl);
+		dest.writeString(this.name);
 	}
 
 	protected Artist(Parcel in)
 	{
-		this.name = in.readString();
+		this.id = in.readString();
 		this.previewUrl = in.readString();
+		this.name = in.readString();
 	}
 
 	public static final Parcelable.Creator<Artist> CREATOR = new Parcelable.Creator<Artist>()
