@@ -25,6 +25,9 @@
             android:name=".activities.ArtistTopTracksActivity"
             android:label="@string/top_tracks_title"/>
 
+        <activity
+            android:name=".activities.PlayerActivity"/>
+
     </application>
 
 </manifest>

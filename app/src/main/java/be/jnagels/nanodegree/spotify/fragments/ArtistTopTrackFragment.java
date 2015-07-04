@@ -31,6 +31,11 @@ import retrofit.client.Response;
  */
 public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.OnTrackClickListener
 {
+	public interface OnTrackPlayListener
+	{
+		void onPlayTrack(Track track, ArrayList<Track> tracks);
+	}
+
 	public final static String param_artist = "artist";
 
 	//data
@@ -71,7 +76,6 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 		this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
-
 
 		this.fetchTopTracks();
 
@@ -114,7 +118,10 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 	@Override
 	public void onTrackClick(Track track)
 	{
-		Toast.makeText(getActivity(), "This will open the player in Stage 2!", Toast.LENGTH_SHORT).show();
+		if (getActivity() instanceof OnTrackPlayListener)
+		{
+			((OnTrackPlayListener) getActivity()).onPlayTrack(track, this.adapter.getData());
+		}
 	}
 
 	private SpotifyCallback<Tracks> callback = new SpotifyCallback<Tracks>() {

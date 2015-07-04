@@ -162,12 +162,24 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		if (data.size() == 0)
 		{
 			this.adapter.setData(null);
-			Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(), R.string.artists_empty, Toast.LENGTH_SHORT).show();
 		}
 		else
 		{
 			this.adapter.setData(data);
 		}
+	}
+
+	private void onDataLoadingFailed(String message)
+	{
+		this.progressView.setVisibility(View.GONE);
+		this.recyclerView.setVisibility(View.GONE);
+		this.adapter.setData(null);
+
+		Toast.makeText(
+				getActivity(),
+				getString(R.string.artists_error, message),
+				Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -238,7 +250,14 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		protected void onFailure(RetrofitError error)
 		{
 			//something failed!
-			adapter.setData(null);
+			//TODO set error message based on the kind of the error (NETWORK, ...)
+			String errorMessage = error.getMessage();
+			if (TextUtils.isEmpty(errorMessage))
+			{
+				errorMessage = getString(R.string.unknown_error);
+			}
+			onDataLoadingFailed(errorMessage);
+
 		}
 	};
 

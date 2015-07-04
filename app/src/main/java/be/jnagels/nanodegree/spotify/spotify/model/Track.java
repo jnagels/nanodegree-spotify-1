@@ -2,6 +2,7 @@ package be.jnagels.nanodegree.spotify.spotify.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 /**
  * Created by jelle on 03/07/15.
@@ -33,6 +34,16 @@ public class Track implements Parcelable
 		}
 	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (o != null && o instanceof Track)
+		{
+			final Track oTrack = (Track) o;
+			return TextUtils.equals(this.id, oTrack.id);
+		}
+		return false;
+	}
 
 	@Override
 	public int describeContents()

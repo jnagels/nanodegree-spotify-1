@@ -5,13 +5,17 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
+
 import be.jnagels.nanodegree.spotify.fragments.ArtistTopTrackFragment;
+import be.jnagels.nanodegree.spotify.fragments.PlayerFragment;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
+import be.jnagels.nanodegree.spotify.spotify.model.Track;
 
 /**
  * Created by jelle on 03/07/15.
  */
-public class ArtistTopTracksActivity extends AbstractActivity
+public class ArtistTopTracksActivity extends AbstractActivity implements ArtistTopTrackFragment.OnTrackPlayListener
 {
 
 	@Override
@@ -47,5 +51,15 @@ public class ArtistTopTracksActivity extends AbstractActivity
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onPlayTrack(Track track, ArrayList<Track> tracks)
+	{
+		final Intent intent = new Intent(this, PlayerActivity.class);
+		intent.putExtra(PlayerActivity.EXTRA_TITLE, this.getSupportActionBar().getSubtitle());
+		intent.putExtra(PlayerFragment.param_selected_track, track);
+		intent.putExtra(PlayerFragment.param_tracks, tracks);
+		startActivity(intent);
 	}
 }
