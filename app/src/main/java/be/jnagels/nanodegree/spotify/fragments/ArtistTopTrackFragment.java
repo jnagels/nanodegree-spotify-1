@@ -31,12 +31,20 @@ import retrofit.client.Response;
  */
 public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.OnTrackClickListener
 {
+	public final static Bundle createArguments(Artist artist)
+	{
+		final Bundle args = new Bundle();
+		args.putParcelable(param_artist, artist);
+		return args;
+	}
+
+
 	public interface OnTrackPlayListener
 	{
 		void onPlayTrack(Track track, ArrayList<Track> tracks);
 	}
 
-	public final static String param_artist = "artist";
+	private final static String param_artist = "artist";
 
 	//data
 	private Artist artist;

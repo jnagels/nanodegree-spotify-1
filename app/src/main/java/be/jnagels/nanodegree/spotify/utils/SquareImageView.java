@@ -27,8 +27,8 @@ public class SquareImageView extends ImageView
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
-		final int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-		final int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+		final int widthSize = Math.min(getMaxWidth(), MeasureSpec.getSize(widthMeasureSpec)) - getPaddingLeft() - getPaddingRight();
+		final int heightSize = Math.min(getMaxHeight(), MeasureSpec.getSize(heightMeasureSpec)) - getPaddingTop() - getPaddingBottom();
 		final int size = Math.min(widthSize, heightSize);
 		setMeasuredDimension(size, size);
 	}

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 import be.jnagels.nanodegree.spotify.fragments.ArtistTopTrackFragment;
 import be.jnagels.nanodegree.spotify.fragments.PlayerFragment;
-import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 
 /**
@@ -35,10 +34,6 @@ public class ArtistTopTracksActivity extends AbstractActivity implements ArtistT
 					.commit();
 		}
 
-		//also set the subtitle in the actionbar!
-		final Intent intent = getIntent();
-		final Artist artist = intent.getParcelableExtra(ArtistTopTrackFragment.param_artist);
-		this.getSupportActionBar().setSubtitle(artist.name);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 

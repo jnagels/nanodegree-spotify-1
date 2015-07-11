@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Default size for the masterview in split-pane view -->
+    <dimen name="master_pane_width">300dp</dimen>
+
+    <!-- The maximum size of the album preview in the player layout -->
+    <dimen name="max_album_preview_size_in_player">400dp</dimen>
+
+</resources>

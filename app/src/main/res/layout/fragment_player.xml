@@ -17,16 +17,17 @@
         android:id="@+id/preview_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/album"
-        android:layout_below="@+id/track"
-        android:layout_margin="16dp">
+        android:layout_below="@+id/track">
 
         <be.jnagels.nanodegree.spotify.utils.SquareImageView
             android:id="@+id/preview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_album_preview_size_in_player"
+            android:maxHeight="@dimen/max_album_preview_size_in_player"
             android:layout_gravity="center"
             android:scaleType="centerInside"
+            android:padding="16dp"
             android:src="@drawable/placeholder_empty"/>
 
     </FrameLayout>
@@ -35,36 +36,71 @@
         android:id="@+id/album"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/play"
+        android:layout_below="@+id/preview_container"
         android:layout_centerHorizontal="true"
-        tools:text="My album name"
-        android:layout_margin="8dp"/>
+        android:layout_marginBottom="16dp"
+        tools:text="My album name"/>
+
+    <RelativeLayout
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/album"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_marginBottom="16dp">
+
+        <SeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/text_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/seekbar"
+            android:layout_alignLeft="@+id/seekbar"
+            tools:text="0:00"/>
+
+        <TextView
+            android:id="@+id/text_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/seekbar"
+            android:layout_alignRight="@+id/seekbar"
+            tools:text="3:15"/>
+
+
+    </RelativeLayout>
 
     <ImageButton
         android:id="@+id/previous"
         style="@style/SS.PlayerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_skip_previous_black_24dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"/>
+        android:layout_toLeftOf="@+id/play"
+        android:layout_below="@+id/progress"
+        android:src="@drawable/ic_skip_previous_black_24dp"/>
 
     <ImageButton
         android:id="@+id/play"
         style="@style/SS.PlayerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_play_arrow_black_24dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@+id/progress"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/ic_play_arrow_black_24dp"/>
 
     <ImageButton
         android:id="@+id/next"
         style="@style/SS.PlayerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_skip_next_black_24dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_toRightOf="@+id/play"
+        android:layout_below="@+id/progress"
+        android:src="@drawable/ic_skip_next_black_24dp"/>
 
 </RelativeLayout>

@@ -183,13 +183,23 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	}
 
 	@Override
-	public void onArtistClick(Artist artist)
+	public int onArtistClick(Artist artist)
 	{
+		@ArtistOpenedMode int openMode = OPEN_MODE_NEW_ACTIVITY;
+
 		//open the detail activity here!
 		if (getActivity() instanceof ArtistsAdapter.OnArtistClickListener)
 		{
-			((ArtistsAdapter.OnArtistClickListener) getActivity()).onArtistClick(artist);
+			openMode = ((ArtistsAdapter.OnArtistClickListener) getActivity()).onArtistClick(artist);
 		}
+
+		if (openMode == OPEN_MODE_FRAGMENT)
+		{
+			//if we're opening in a detail fragment, we want to "select" the clicked artist.
+			this.adapter.setSelectedArtistId(artist.id);
+		}
+
+		return openMode;
 	}
 
 	@Override

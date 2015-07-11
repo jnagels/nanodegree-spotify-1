@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- The maximum size of the album preview in the player layout -->
+    <dimen name="max_album_preview_size_in_player">400dp</dimen>
+
+</resources>

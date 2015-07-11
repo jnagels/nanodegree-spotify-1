@@ -2,7 +2,6 @@ package be.jnagels.nanodegree.spotify.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.view.MenuItem;
 
 import be.jnagels.nanodegree.spotify.fragments.PlayerFragment;
@@ -12,8 +11,6 @@ import be.jnagels.nanodegree.spotify.fragments.PlayerFragment;
  */
 public class PlayerActivity extends AbstractActivity
 {
-	public final static String EXTRA_TITLE = "title";
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -33,13 +30,6 @@ public class PlayerActivity extends AbstractActivity
 
 		//make sure the user can get back
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-		//set the title if there is one!
-		final String title = getIntent().getStringExtra(EXTRA_TITLE);
-		if (!TextUtils.isEmpty(title))
-		{
-			getSupportActionBar().setTitle(title);
-		}
 	}
 
 	@Override

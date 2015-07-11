@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Default row height for a recyclerview -->
     <dimen name="default_row_height">72dp</dimen>
+    <!-- Small album preview size for in a listitem -->
     <dimen name="album_preview_size">56dp</dimen>
+
+    <!-- The maximum size of the album preview in the player layout -->
+    <dimen name="max_album_preview_size_in_player">300dp</dimen>
+
+    <!-- Default size for the masterview in split-pane view -->
+    <dimen name="master_pane_width">240dp</dimen>
 
 </resources>
