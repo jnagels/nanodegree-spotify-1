@@ -55,10 +55,13 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 	TextView textViewProgress;
 	@Bind(R.id.text_duration)
 	TextView textViewDuration;
+
 	@Bind(R.id.play)
 	ImageButton buttonPlay;
+
 	@Bind(R.id.next)
 	View buttonNext;
+
 	@Bind(R.id.previous)
 	View buttonPrevious;
 
@@ -311,6 +314,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		public void onServiceConnected(ComponentName name, IBinder service)
 		{
 			playbackService = ((PlaybackService.LocalBinder)service).getService();
+			playbackService.setOnPlaybackListener(PlayerFragment.this);
 			//start playing (if it wasn't already)
 			if (!playbackService.isPlaying())
 			{

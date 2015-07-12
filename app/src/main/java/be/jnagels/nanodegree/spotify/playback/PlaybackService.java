@@ -140,6 +140,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			if (!this.mediaPlayer.isPlaying())
 			{
 				this.mediaPlayer.start();
+				this.dispatchStatus(STATUS_PLAYING);
 			}
 
 			return;
