@@ -89,6 +89,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		ButterKnife.bind(this, view);
 
 		this.seekBar.setOnSeekBarChangeListener(this);
+		this.seekBar.setEnabled(false);
 
 		//read the selected track from the arguments, or from the savedInstanceState if there is any!
 		final Track selectedTrack;
@@ -118,7 +119,11 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 	{
 		super.onActivityCreated(savedInstanceState);
 
+
 		final Intent serviceIntent = new Intent(getActivity(), PlaybackService.class);
+		//start the service, so it doesn't get destroying when we unbind when closing the fragment
+		getActivity().startService(serviceIntent);
+		//bind to the service to call its methods
 		getActivity().bindService(serviceIntent, this.serviceConnection, Context.BIND_AUTO_CREATE);
 	}
 
@@ -141,7 +146,10 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 	public void onDestroy()
 	{
 		super.onDestroy();
+		//unbind when destroying
 		getActivity().unbindService(this.serviceConnection);
+		playbackService.setOnPlaybackListener(null);
+		playbackService = null;
 	}
 
 	/**
@@ -234,7 +242,6 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 			//the user has seeked to a new position, skip to that position for the playback
 			this.playbackService.seekTo(progress);
 		}
-
 	}
 
 	@Override
@@ -251,7 +258,6 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 			case PlaybackService.STATUS_LOADING:
 				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
 				this.buttonPlay.setEnabled(false);
-				this.seekBar.setEnabled(false);
 				break;
 
 			case PlaybackService.STATUS_PLAYING:
@@ -262,7 +268,6 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 
 			case PlaybackService.STATUS_PAUSED:
 				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-				this.seekBar.setEnabled(false);
 				break;
 
 			case PlaybackService.STATUS_ERROR:
@@ -273,16 +278,10 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 				break;
 			case PlaybackService.STATUS_FINISHED:
 				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-				this.seekBar.setEnabled(false);
+				this.seekBar.setProgress(this.seekBar.getMax());
+				this.textViewProgress.setText(this.textViewDuration.getText());
 				break;
 		}
-	}
-
-	@Override
-	public void onPlaybackProgressed(int progress)
-	{
-		this.seekBar.setProgress(progress);
-		this.textViewProgress.setText(formatDuration(progress));
 	}
 
 	@Override
@@ -308,24 +307,29 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 				.toString();
 	}
 
+	/**
+	 * Service Connection object to connect to the PlaybackService
+	 */
 	private ServiceConnection serviceConnection = new ServiceConnection()
 	{
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service)
 		{
 			playbackService = ((PlaybackService.LocalBinder)service).getService();
+			//register a listener to get updates here when something changed!
 			playbackService.setOnPlaybackListener(PlayerFragment.this);
-			//start playing (if it wasn't already)
-			if (!playbackService.isPlaying())
-			{
-				playbackService.play(selectedTrack);
-			}
+			//start playing
+			playbackService.play(selectedTrack);
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName name)
 		{
-			playbackService.setOnPlaybackListener(null);
+			if (playbackService != null)
+			{
+				//remove the listener
+				playbackService.setOnPlaybackListener(null);
+			}
 			playbackService = null;
 		}
 	};

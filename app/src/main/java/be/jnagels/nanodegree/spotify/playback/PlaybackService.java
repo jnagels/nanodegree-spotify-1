@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -34,10 +36,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public final static int STATUS_ERROR = 3;
 	public final static int STATUS_FINISHED = 4;
 
+	private final static int MSG_PROGRESS = 0;
+
 	public interface OnPlaybackListener
 	{
-		void onPlaybackProgressed(int progress);
-
 		/**
 		 * @param progress in milliseconds
 		 * @param duration in milliseconds
@@ -49,6 +51,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	// Binder given to clients
 	private final IBinder binder = new LocalBinder();
+	private final Handler handler = new MyHandler();
 
 	private OnPlaybackListener onPlaybackListener;
 	private MediaPlayer mediaPlayer = null;
@@ -140,6 +143,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			if (!this.mediaPlayer.isPlaying())
 			{
 				this.mediaPlayer.start();
+				this.dispatchTrackInformation();
 				this.dispatchStatus(STATUS_PLAYING);
 			}
 
@@ -177,6 +181,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			return;
 		}
 		this.mediaPlayer.pause();
+		this.handler.removeMessages(MSG_PROGRESS);
 		this.dispatchStatus(STATUS_PAUSED);
 	}
 
@@ -203,6 +208,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	 */
 	public void stop()
 	{
+		this.handler.removeMessages(MSG_PROGRESS);
 		this.stopSelf();
 	}
 
@@ -212,10 +218,13 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	 */
 	public void seekTo(int position)
 	{
+		//stop the progress-loop
+		this.handler.removeMessages(MSG_PROGRESS);
+
 		if (this.mediaPlayer != null)
 		{
 			this.mediaPlayer.seekTo(position);
-			this.dispatchStatus(STATUS_LOADING);
+			this.dispatchTrackInformation();
 		}
 	}
 
@@ -241,12 +250,19 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		}
 	}
 
+	/**
+	 * Dispatch track information to the connected listener.
+	 * This also includes the current position in the track
+	 */
 	private void dispatchTrackInformation()
 	{
 		if (this.onPlaybackListener != null)
 		{
 			this.onPlaybackListener.onTrackInformationLoaded(this.mediaPlayer.getCurrentPosition(), this.mediaPlayer.getDuration());
 		}
+
+		//do this again in 1 second
+		this.handler.sendEmptyMessageDelayed(MSG_PROGRESS, 500l);
 	}
 
 	@Override
@@ -262,6 +278,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public void onCompletion(MediaPlayer mp)
 	{
 		this.dispatchStatus(STATUS_FINISHED);
+		this.handler.removeMessages(MSG_PROGRESS);
 	}
 
 	private void showNotification()
@@ -283,6 +300,18 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		{
 			// Return this instance of LocalService so clients can call public methods
 			return PlaybackService.this;
+		}
+	}
+
+	private class MyHandler extends Handler
+	{
+		@Override
+		public void handleMessage(Message msg)
+		{
+			if (msg.what == MSG_PROGRESS)
+			{
+				dispatchTrackInformation();
+			}
 		}
 	}
 
