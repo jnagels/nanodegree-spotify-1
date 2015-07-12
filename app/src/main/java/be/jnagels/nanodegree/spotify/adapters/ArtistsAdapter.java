@@ -52,6 +52,11 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 		this.notifyDataSetChanged();
 	}
 
+	public String getSelectedArtistId()
+	{
+		return selectedArtistId;
+	}
+
 	public void setOnArtistClickListener(OnArtistClickListener onArtistClickListener)
 	{
 		this.onArtistClickListener = onArtistClickListener;

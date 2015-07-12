@@ -6,10 +6,18 @@
                 android:padding="16dp">
 
     <TextView
-        android:id="@+id/track"
+        android:id="@+id/artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        tools:text="My Artist"/>
+
+    <TextView
+        android:id="@+id/track"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/artist"
         android:layout_centerHorizontal="true"
         tools:text="My track name"/>
 

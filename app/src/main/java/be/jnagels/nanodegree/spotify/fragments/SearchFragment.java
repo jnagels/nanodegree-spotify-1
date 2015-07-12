@@ -73,6 +73,8 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 
 			final ArrayList<Artist> data = savedInstanceState.getParcelableArrayList("data");
 			this.adapter.setData(data);
+
+			this.adapter.setSelectedArtistId(savedInstanceState.getString("selected_artist_id"));
 		}
 	}
 
@@ -111,6 +113,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		super.onSaveInstanceState(outState);
 		outState.putString("query", this.query);
 		outState.putParcelableArrayList("data", this.adapter.getData());
+		outState.putString("selected_artist_id", this.adapter.getSelectedArtistId());
 	}
 
 	/**

@@ -1,14 +1,21 @@
 package be.jnagels.nanodegree.spotify.fragments;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -16,12 +23,13 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import be.jnagels.nanodegree.spotify.R;
+import be.jnagels.nanodegree.spotify.playback.PlaybackService;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PlayerFragment extends DialogFragment
+public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarChangeListener, PlaybackService.OnPlaybackListener
 {
 	public final static String param_tracks = "tracks";
 	public final static String param_selected_track = "track";
@@ -29,25 +37,37 @@ public class PlayerFragment extends DialogFragment
 	//data
 	private ArrayList<Track> tracks;
 	private Track selectedTrack;
+	private PlaybackService playbackService;
 
 	//views
+	@Bind(R.id.artist)
+	TextView textViewArtist;
+	@Bind(R.id.track)
+	TextView textViewTrack;
+	@Bind(R.id.preview)
+	ImageView imageViewArt;
+	@Bind(R.id.album)
+	TextView textViewAlbum;
+
+	@Bind(R.id.seekbar)
+	SeekBar seekBar;
+	@Bind(R.id.text_progress)
+	TextView textViewProgress;
+	@Bind(R.id.text_duration)
+	TextView textViewDuration;
 	@Bind(R.id.play)
-	View buttonPlay;
+	ImageButton buttonPlay;
 	@Bind(R.id.next)
 	View buttonNext;
 	@Bind(R.id.previous)
 	View buttonPrevious;
-	@Bind(R.id.preview)
-	ImageView imageViewArt;
-	@Bind(R.id.track)
-	TextView textViewTrack;
-	@Bind(R.id.album)
-	TextView textViewAlbum;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		this.setStyle(STYLE_NO_TITLE, 0);
 
 		//read the tracklist from the arguments. This should always be available.
 		this.tracks = getArguments().getParcelableArrayList(param_tracks);
@@ -64,6 +84,8 @@ public class PlayerFragment extends DialogFragment
 	{
 		final View view = inflater.inflate(R.layout.fragment_player, container, false);
 		ButterKnife.bind(this, view);
+
+		this.seekBar.setOnSeekBarChangeListener(this);
 
 		//read the selected track from the arguments, or from the savedInstanceState if there is any!
 		final Track selectedTrack;
@@ -89,6 +111,15 @@ public class PlayerFragment extends DialogFragment
 	}
 
 	@Override
+	public void onActivityCreated(Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+
+		final Intent serviceIntent = new Intent(getActivity(), PlaybackService.class);
+		getActivity().bindService(serviceIntent, this.serviceConnection, Context.BIND_AUTO_CREATE);
+	}
+
+	@Override
 	public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
@@ -101,6 +132,13 @@ public class PlayerFragment extends DialogFragment
 		super.onDestroyView();
 		Picasso.with(getActivity()).cancelRequest(this.imageViewArt);
 		ButterKnife.unbind(this);
+	}
+
+	@Override
+	public void onDestroy()
+	{
+		super.onDestroy();
+		getActivity().unbindService(this.serviceConnection);
 	}
 
 	/**
@@ -116,6 +154,7 @@ public class PlayerFragment extends DialogFragment
 		this.selectedTrack = track;
 
 		//set track information
+		this.textViewArtist.setText(this.selectedTrack.artist);
 		this.textViewTrack.setText(this.selectedTrack.track);
 		this.textViewAlbum.setText(this.selectedTrack.album);
 
@@ -135,6 +174,11 @@ public class PlayerFragment extends DialogFragment
 			Picasso.with(getActivity())
 					.load(Uri.parse(this.selectedTrack.artUrl))
 					.into(this.imageViewArt);
+		}
+
+		if (this.playbackService != null)
+		{
+			this.playbackService.play(this.selectedTrack);
 		}
 	}
 
@@ -173,6 +217,112 @@ public class PlayerFragment extends DialogFragment
 	@OnClick(R.id.play)
 	public void onClickPlay()
 	{
-		//TODO pause/play the playback. Connect to music service here.
+		if (this.playbackService != null)
+		{
+			this.playbackService.playOrPause();
+		}
 	}
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+	{
+		if (fromUser)
+		{
+			//the user has seeked to a new position, skip to that position for the playback
+			this.playbackService.seekTo(progress);
+		}
+
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar){}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar){}
+
+	@Override
+	public void onPlaybackStatusChanged(@PlaybackService.PlaybackStatus int status)
+	{
+		switch(status)
+		{
+			case PlaybackService.STATUS_LOADING:
+				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+				this.buttonPlay.setEnabled(false);
+				this.seekBar.setEnabled(false);
+				break;
+
+			case PlaybackService.STATUS_PLAYING:
+				this.buttonPlay.setEnabled(true);
+				this.buttonPlay.setImageResource(R.drawable.ic_pause_black_24dp);
+				this.seekBar.setEnabled(true);
+				break;
+
+			case PlaybackService.STATUS_PAUSED:
+				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+				this.seekBar.setEnabled(false);
+				break;
+
+			case PlaybackService.STATUS_ERROR:
+				this.buttonNext.setEnabled(false);
+				this.buttonPrevious.setEnabled(false);
+				this.buttonPlay.setEnabled(false);
+				this.seekBar.setEnabled(false);
+				break;
+			case PlaybackService.STATUS_FINISHED:
+				this.buttonPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+				this.seekBar.setEnabled(false);
+				break;
+		}
+	}
+
+	@Override
+	public void onPlaybackProgressed(int progress)
+	{
+		this.seekBar.setProgress(progress);
+		this.textViewProgress.setText(formatDuration(progress));
+	}
+
+	@Override
+	public void onTrackInformationLoaded(int progress, int duration)
+	{
+		this.seekBar.setProgress(progress);
+		this.seekBar.setMax(duration);
+		this.textViewProgress.setText(formatDuration(progress));
+		this.textViewDuration.setText(formatDuration(duration));
+	}
+
+	private final static String formatDuration(int milliseconds)
+	{
+		int seconds = milliseconds / 1000;
+		int minutes = seconds / 60;
+		seconds = seconds % 60;
+
+		return new StringBuilder()
+				.append(minutes)
+				.append(":")
+				.append(seconds < 10 ? "0" : "")
+				.append(seconds)
+				.toString();
+	}
+
+	private ServiceConnection serviceConnection = new ServiceConnection()
+	{
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service)
+		{
+			playbackService = ((PlaybackService.LocalBinder)service).getService();
+			//start playing (if it wasn't already)
+			if (!playbackService.isPlaying())
+			{
+				playbackService.play(selectedTrack);
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name)
+		{
+			playbackService.setOnPlaybackListener(null);
+			playbackService = null;
+		}
+	};
 }

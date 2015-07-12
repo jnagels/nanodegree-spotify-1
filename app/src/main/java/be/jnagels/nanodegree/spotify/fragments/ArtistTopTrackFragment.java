@@ -139,7 +139,7 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 			final ArrayList<Track> tracks = new ArrayList<>();
 			for(kaaes.spotify.webapi.android.models.Track track : data.tracks)
 			{
-				tracks.add(new Track(track));
+				tracks.add(new Track(artist.name, track));
 			}
 			onDataLoaded(tracks);
 		}

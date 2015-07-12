@@ -10,15 +10,17 @@ import android.text.TextUtils;
 public class Track implements Parcelable
 {
 	public final String id;
+	public final String artist;
 	public final String track;
 	public final String album;
 	public final String artUrl;
 	public final String previewUrl;
 	public final String spotifyUri;
 
-	public Track(kaaes.spotify.webapi.android.models.Track track)
+	public Track(String artistName, kaaes.spotify.webapi.android.models.Track track)
 	{
 		this.id = track.id;
+		this.artist = artistName;
 		this.track = track.name;
 		this.album = track.album.name;
 		this.previewUrl = track.preview_url;
@@ -45,6 +47,7 @@ public class Track implements Parcelable
 		return false;
 	}
 
+
 	@Override
 	public int describeContents()
 	{
@@ -55,6 +58,7 @@ public class Track implements Parcelable
 	public void writeToParcel(Parcel dest, int flags)
 	{
 		dest.writeString(this.id);
+		dest.writeString(this.artist);
 		dest.writeString(this.track);
 		dest.writeString(this.album);
 		dest.writeString(this.artUrl);
@@ -65,6 +69,7 @@ public class Track implements Parcelable
 	protected Track(Parcel in)
 	{
 		this.id = in.readString();
+		this.artist = in.readString();
 		this.track = in.readString();
 		this.album = in.readString();
 		this.artUrl = in.readString();
@@ -72,7 +77,7 @@ public class Track implements Parcelable
 		this.spotifyUri = in.readString();
 	}
 
-	public static final Parcelable.Creator<Track> CREATOR = new Parcelable.Creator<Track>()
+	public static final Creator<Track> CREATOR = new Creator<Track>()
 	{
 		public Track createFromParcel(Parcel source)
 		{
