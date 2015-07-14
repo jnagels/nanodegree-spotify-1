@@ -7,4 +7,9 @@
     <string name="top_tracks_title">Top 10 Tracks</string>
     <string name="top_tracks_error">Something went wrong while getting the top tracks</string>
     <string name="top_tracks_empty">No Top Tracks found</string>
+
+    <string name="previous">Previous</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="next">Next</string>
 </resources>

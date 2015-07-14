@@ -1,7 +1,11 @@
 package be.jnagels.nanodegree.spotify.playback;
 
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -10,10 +14,17 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v7.app.NotificationCompat;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 
 /**
@@ -24,7 +35,8 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	private final static String BASE_ACTION = "be.jnagels.nanodegree.spotify.action.";
 
 	public static final String ACTION_PLAY = BASE_ACTION + "PLAY";
-	public static final String ACTION_PAUSE = BASE_ACTION + "PLAY";
+	public static final String ACTION_PAUSE = BASE_ACTION + "PAUSE";
+	public static final String ACTION_PLAYPAUSE = BASE_ACTION + "PLAYPAUSE";
 	public static final String ACTION_STOP = BASE_ACTION + "STOP";
 	public static final String ACTION_NEXT = BASE_ACTION + "NEXT";
 	public static final String ACTION_PREVIOUS = BASE_ACTION + "PREVIOUS";
@@ -55,6 +67,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 		/**
 		 * The playback status is changed
+		 *
 		 * @param status
 		 */
 		void onPlaybackStatusChanged(@PlaybackStatus int status);
@@ -66,6 +79,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	private OnPlaybackListener onPlaybackListener;
 	private MediaPlayer mediaPlayer = null;
+	private MediaSessionCompat mediaSession;
 
 	private Track currentTrack = null;
 	private ArrayList<Track> currentTrackList = null;
@@ -80,29 +94,40 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		final String action = intent.getAction();
+		//if action == null, then we're just starting this service. No action required :)
 
-		if (ACTION_PLAY.equals(action))
+		if (action != null)
 		{
-			if (this.currentTrack != null && this.currentTrackList != null)
+			//call different methods based on the given action
+			switch (action)
 			{
-				play(this.currentTrackList, this.currentTrack);
+				case ACTION_PLAY:
+					if (this.currentTrack != null && this.currentTrackList != null)
+					{
+						play(this.currentTrackList, this.currentTrack);
+					}
+					break;
+
+				case ACTION_PLAYPAUSE:
+					playOrPause();
+					break;
+
+				case ACTION_PAUSE:
+					pause();
+					break;
+
+				case ACTION_NEXT:
+					skip(1);
+					break;
+
+				case ACTION_PREVIOUS:
+					skip(-1);
+					break;
+
+				case ACTION_STOP:
+					stop();
+					break;
 			}
-		}
-		else if (ACTION_PAUSE.equals(action))
-		{
-			pause();
-		}
-		else if (ACTION_NEXT.equals(action))
-		{
-			skip(1);
-		}
-		else if (ACTION_PREVIOUS.equals(action))
-		{
-			skip(-1);
-		}
-		else if (ACTION_STOP.equals(action))
-		{
-			stop();
 		}
 		return START_NOT_STICKY;
 	}
@@ -114,16 +139,24 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 		this.hideNotification();
 
+		if (this.mediaSession != null)
+		{
+			this.mediaSession.release();
+			this.mediaSession = null;
+		}
+
 		if (this.mediaPlayer != null)
 		{
 			this.mediaPlayer.release();
 			this.mediaPlayer = null;
 		}
+		this.currentTrackList = null;
 		this.currentTrack = null;
 	}
 
 	/**
 	 * Register a listener for playback-callbacks
+	 *
 	 * @param onPlaybackListener
 	 */
 	public void setOnPlaybackListener(OnPlaybackListener onPlaybackListener)
@@ -145,15 +178,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	/**
 	 * Play the given track. Will stop playback if currently playing another track
+	 *
 	 * @param tracks the tracklist
-	 * @param track the track to play
+	 * @param track  the track to play
 	 */
 	public void play(ArrayList<Track> tracks, Track track)
 	{
 		if (tracks == null || tracks.isEmpty() || track == null)
 		{
 			//don't do anything here, we have no information to play...
-			return ;
+			return;
 		}
 
 		this.ensureMediaPlayer();
@@ -177,12 +211,14 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			this.mediaPlayer.reset();
 		}
 
+		//save track and tracklist
 		this.currentTrack = track;
 		this.currentTrackList = tracks;
 		try
 		{
 			this.mediaPlayer.setDataSource(this.currentTrack.previewUrl);
 			this.mediaPlayer.prepareAsync();
+			this.showOrUpdateNotification();
 			this.dispatchStatus(STATUS_LOADING);
 		}
 		catch (IOException e)
@@ -241,6 +277,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	/**
 	 * Seek to a specific position
+	 *
 	 * @param position
 	 */
 	public void seekTo(int position)
@@ -268,7 +305,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 				int newIndex = currentIndex + delta;
 				if (newIndex < 0)
 				{
-					newIndex = this.currentTrackList.size()-1;
+					newIndex = this.currentTrackList.size() - 1;
 				}
 				else if (newIndex >= this.currentTrackList.size())
 				{
@@ -291,11 +328,18 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			this.mediaPlayer.setOnPreparedListener(this);
 			this.mediaPlayer.setOnCompletionListener(this);
 			this.mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+			final ComponentName mediaButtonEventReceiver = new ComponentName(getPackageName(), MediaButtonEventReceiver.class.getName());
+			this.mediaSession = new MediaSessionCompat(this, "spotify_streamer", mediaButtonEventReceiver, null);
+			this.mediaSession.setCallback(this.mediaSessionCallback);
+			this.mediaSession.setActive(true);
 		}
 	}
 
 	private void dispatchStatus(@PlaybackStatus int status)
 	{
+		//update the notification to reflect the current state :)
+		this.showOrUpdateNotification();
 		if (this.onPlaybackListener != null)
 		{
 			this.onPlaybackListener.onPlaybackStatusChanged(status);
@@ -333,31 +377,145 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		this.handler.removeMessages(MSG_PROGRESS);
 	}
 
-	private void showNotification()
+	/**
+	 * Show (or update) the notification
+	 */
+	private void showOrUpdateNotification()
 	{
-//		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
-//
-//		Notification notification = new Notification.Builder(this)
-//				// Show controls on lock screen even when user hides sensitive content.
-//				.setVisibility(Notification.VISIBILITY_PUBLIC)
-//				.setSmallIcon(R.drawable.ic_pause_white_24dp)
-//				// Add media control buttons that invoke intents in your media service
-////				.addAction(R.drawable.ic_prev, "Previous", prevPendingIntent) // #0
-////				.addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)  // #1
-////				.addAction(R.drawable.ic_next, "Next", nextPendingIntent)     // #2
-//						// Apply the media style template
-//				.setStyle(new Notification.MediaStyle()
-//								.setContentTitle(this.currentTrack.track)
-//								.setContentText(this.currentTrack.artist)
-//								.setLargeIcon()
-//								.build();
+		//We could optimize here by saving the bitmap in memory here (if the old ArtUrl is the same
+		// as the new one), but we count on Picasso to do this for us :)
+
+		//load the album art with picasso.
+		//When finished, use that bitmap to create a notification!
+		Picasso.with(this).load(this.currentTrack.artUrl)
+				.into(new Target()
+					  {
+						  @Override
+						  public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
+						  {
+							  onImageReadyForNotification(bitmap);
+						  }
+
+						  @Override
+						  public void onBitmapFailed(Drawable errorDrawable)
+						  {
+							  //no image to show!
+							  onImageReadyForNotification(null);
+						  }
+
+						  @Override
+						  public void onPrepareLoad(Drawable placeHolderDrawable)
+						  {
+						  }
+					  }
+				);
 	}
 
+	/**
+	 * Actually create the notification!
+	 * @param bitmap
+	 */
+	private void onImageReadyForNotification(Bitmap bitmap)
+	{
+		final boolean isPlaying = this.isPlaying();
+		//only support next/previous if there is more than 1 track in the tracklist
+		final boolean showNextAndPreviousButtons = this.currentTrackList.size() > 1;
+
+
+		final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+		notificationBuilder.setSmallIcon(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+		notificationBuilder.setContentTitle(this.currentTrack.track);
+		notificationBuilder.setContentText(this.currentTrack.artist + " - " + this.currentTrack.album);
+		notificationBuilder.setLargeIcon(bitmap);
+
+		//previous button (if necessary)
+		if (showNextAndPreviousButtons)
+		{
+			notificationBuilder.addAction(android.R.drawable.ic_media_previous, getString(R.string.previous), getPendingIntentForAction(ACTION_PREVIOUS));
+		}
+
+		//show pause or play depending on the current state!
+		if (this.isPlaying())
+		{
+			notificationBuilder.addAction(android.R.drawable.ic_media_pause, getString(R.string.pause), getPendingIntentForAction(ACTION_PAUSE));
+		}
+		else
+		{
+			notificationBuilder.addAction(android.R.drawable.ic_media_play, getString(R.string.play), getPendingIntentForAction(ACTION_PLAY));
+		}
+
+		//next button (if necessary)
+		if (showNextAndPreviousButtons)
+		{
+			notificationBuilder.addAction(android.R.drawable.ic_media_next, getString(R.string.next), getPendingIntentForAction(ACTION_NEXT));
+		}
+
+		//add media style stuff
+		notificationBuilder.setStyle(new NotificationCompat.MediaStyle()
+						.setMediaSession(this.mediaSession.getSessionToken())
+		);
+
+		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+		nm.notify(R.id.notification_id, notificationBuilder.build());
+	}
+
+	/**
+	 * @param action
+	 * @return a pending intent that will execute the given action in the PlaybackService. See {@link #onStartCommand(Intent, int, int)}
+	 */
+	private PendingIntent getPendingIntentForAction(String action)
+	{
+		final Intent intent = new Intent(this, PlaybackService.class);
+		intent.setAction(action);
+		return PendingIntent.getService(this, 0, intent, 0);
+	}
+
+	/**
+	 * Hide the notification
+	 */
 	private void hideNotification()
 	{
-//		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
-//		nm.cancel();
+		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+		nm.cancel(R.id.notification_id);
 	}
+
+	/**
+	 * Callback methods for the mediaSession
+	 */
+	private final MediaSessionCompat.Callback mediaSessionCallback = new MediaSessionCompat.Callback()
+	{
+		@Override
+		public void onPlay()
+		{
+			playOrPause();
+		}
+
+		@Override
+		public void onSkipToNext()
+		{
+			skip(1);
+		}
+
+		@Override
+		public void onSkipToPrevious()
+		{
+			skip(-1);
+		}
+
+		@Override
+		public void onPause()
+		{
+			playOrPause();
+		}
+
+		@Override
+		public void onStop()
+		{
+			PlaybackService.this.stop();
+		}
+
+
+	};
 
 	/**
 	 * Local binder class
