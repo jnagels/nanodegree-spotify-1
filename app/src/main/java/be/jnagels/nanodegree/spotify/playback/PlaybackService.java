@@ -12,6 +12,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 
@@ -24,8 +25,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	public static final String ACTION_PLAY = BASE_ACTION + "PLAY";
 	public static final String ACTION_PAUSE = BASE_ACTION + "PLAY";
-	public static final String ACTION_STOP = BASE_ACTION + "PLAY";
-	public static final String ACTION_SEEK = BASE_ACTION + "SEEK";
+	public static final String ACTION_STOP = BASE_ACTION + "STOP";
+	public static final String ACTION_NEXT = BASE_ACTION + "NEXT";
+	public static final String ACTION_PREVIOUS = BASE_ACTION + "PREVIOUS";
 
 	@IntDef({STATUS_LOADING, STATUS_PLAYING, STATUS_PAUSED, STATUS_ERROR, STATUS_FINISHED})
 	public @interface PlaybackStatus {}
@@ -46,6 +48,15 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		 */
 		void onTrackInformationLoaded(int progress, int duration);
 
+		/**
+		 * Called when the currently playing track changes!
+		 */
+		void onTrackChanged(Track track);
+
+		/**
+		 * The playback status is changed
+		 * @param status
+		 */
 		void onPlaybackStatusChanged(@PlaybackStatus int status);
 	}
 
@@ -55,7 +66,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	private OnPlaybackListener onPlaybackListener;
 	private MediaPlayer mediaPlayer = null;
+
 	private Track currentTrack = null;
+	private ArrayList<Track> currentTrackList = null;
 
 	@Nullable
 	@Override
@@ -70,21 +83,22 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 		if (ACTION_PLAY.equals(action))
 		{
-			//get the track and start playing!
-			Track track = intent.getParcelableExtra("track");
-			play(track);
+			if (this.currentTrack != null && this.currentTrackList != null)
+			{
+				play(this.currentTrackList, this.currentTrack);
+			}
 		}
 		else if (ACTION_PAUSE.equals(action))
 		{
 			pause();
 		}
-		else if (ACTION_SEEK.equals(action))
+		else if (ACTION_NEXT.equals(action))
 		{
-			int seekToPosition = intent.getIntExtra("seek_to", -1);
-			if (seekToPosition > -1)
-			{
-				seekTo(seekToPosition);
-			}
+			skip(1);
+		}
+		else if (ACTION_PREVIOUS.equals(action))
+		{
+			skip(-1);
 		}
 		else if (ACTION_STOP.equals(action))
 		{
@@ -131,10 +145,17 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	/**
 	 * Play the given track. Will stop playback if currently playing another track
-	 * @param track
+	 * @param tracks the tracklist
+	 * @param track the track to play
 	 */
-	public void play(Track track)
+	public void play(ArrayList<Track> tracks, Track track)
 	{
+		if (tracks == null || tracks.isEmpty() || track == null)
+		{
+			//don't do anything here, we have no information to play...
+			return ;
+		}
+
 		this.ensureMediaPlayer();
 
 		if (this.currentTrack != null && this.currentTrack.id == track.id)
@@ -150,7 +171,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			return;
 		}
 
-
 		if (this.mediaPlayer != null)
 		{
 			//stop playback for this track!
@@ -158,6 +178,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		}
 
 		this.currentTrack = track;
+		this.currentTrackList = tracks;
 		try
 		{
 			this.mediaPlayer.setDataSource(this.currentTrack.previewUrl);
@@ -167,6 +188,12 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		catch (IOException e)
 		{
 			this.dispatchStatus(STATUS_ERROR);
+		}
+
+		//call the listener too
+		if (this.onPlaybackListener != null)
+		{
+			this.onPlaybackListener.onTrackChanged(this.currentTrack);
 		}
 	}
 
@@ -198,7 +225,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 			}
 			else
 			{
-				this.play(this.currentTrack);
+				this.play(this.currentTrackList, this.currentTrack);
 			}
 		}
 	}
@@ -225,6 +252,31 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		{
 			this.mediaPlayer.seekTo(position);
 			this.dispatchTrackInformation();
+		}
+	}
+
+	/**
+	 * @param delta 1 for next, -1 for previous.
+	 */
+	public void skip(int delta)
+	{
+		if (this.currentTrack != null && this.currentTrackList != null)
+		{
+			final int currentIndex = this.currentTrackList.indexOf(this.currentTrack);
+			if (currentIndex > -1)
+			{
+				int newIndex = currentIndex + delta;
+				if (newIndex < 0)
+				{
+					newIndex = this.currentTrackList.size()-1;
+				}
+				else if (newIndex >= this.currentTrackList.size())
+				{
+					newIndex = 0;
+				}
+
+				this.play(this.currentTrackList, this.currentTrackList.get(newIndex));
+			}
 		}
 	}
 
@@ -256,7 +308,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	 */
 	private void dispatchTrackInformation()
 	{
-		if (this.onPlaybackListener != null)
+		if (this.onPlaybackListener != null && this.mediaPlayer.isPlaying())
 		{
 			this.onPlaybackListener.onTrackInformationLoaded(this.mediaPlayer.getCurrentPosition(), this.mediaPlayer.getDuration());
 		}
@@ -283,12 +335,28 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	private void showNotification()
 	{
-
+//		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+//
+//		Notification notification = new Notification.Builder(this)
+//				// Show controls on lock screen even when user hides sensitive content.
+//				.setVisibility(Notification.VISIBILITY_PUBLIC)
+//				.setSmallIcon(R.drawable.ic_pause_white_24dp)
+//				// Add media control buttons that invoke intents in your media service
+////				.addAction(R.drawable.ic_prev, "Previous", prevPendingIntent) // #0
+////				.addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)  // #1
+////				.addAction(R.drawable.ic_next, "Next", nextPendingIntent)     // #2
+//						// Apply the media style template
+//				.setStyle(new Notification.MediaStyle()
+//								.setContentTitle(this.currentTrack.track)
+//								.setContentText(this.currentTrack.artist)
+//								.setLargeIcon()
+//								.build();
 	}
 
 	private void hideNotification()
 	{
-
+//		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+//		nm.cancel();
 	}
 
 	/**

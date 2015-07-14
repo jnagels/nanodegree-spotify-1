@@ -109,7 +109,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		{
 			this.tracks.add(selectedTrack);
 		}
-		this.setSelectedTrack(selectedTrack);
+		this.selectedTrack = selectedTrack;
 
 		return view;
 	}
@@ -152,77 +152,22 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		playbackService = null;
 	}
 
-	/**
-	 * Set the selected track and update the views + start playing
-	 * @param track
-	 */
-	private void setSelectedTrack(Track track)
-	{
-		if (this.selectedTrack == track)
-		{
-			return ;
-		}
-		this.selectedTrack = track;
-
-		//set track information
-		this.textViewArtist.setText(this.selectedTrack.artist);
-		this.textViewTrack.setText(this.selectedTrack.track);
-		this.textViewAlbum.setText(this.selectedTrack.album);
-
-		//enable/disable the skip-buttons
-		final boolean enableSkipButtons = this.tracks.size() > 1;
-		this.buttonNext.setEnabled(enableSkipButtons);
-		this.buttonPrevious.setEnabled(enableSkipButtons);
-
-		//load the album art (or nothing)
-		if (TextUtils.isEmpty(this.selectedTrack.artUrl))
-		{
-			this.imageViewArt.setImageResource(R.drawable.placeholder_empty);
-			Picasso.with(getActivity()).cancelRequest(this.imageViewArt);
-		}
-		else
-		{
-			Picasso.with(getActivity())
-					.load(Uri.parse(this.selectedTrack.artUrl))
-					.into(this.imageViewArt);
-		}
-
-		if (this.playbackService != null)
-		{
-			this.playbackService.play(this.selectedTrack);
-		}
-	}
-
-	/**
-	 * If at the beginning/end, it will skip to the last/first item in the tracklist.
-	 * @param delta the number of items to skip ahead (> or < than 0 is possible).
-	 */
-	private void goTo(int delta)
-	{
-		final int currentIndex = this.tracks.indexOf(this.selectedTrack);
-		int destinationIndex = currentIndex + delta;
-		if (destinationIndex < 0)
-		{
-			destinationIndex = this.tracks.size()-1;
-		}
-		else if (destinationIndex >= this.tracks.size())
-		{
-			destinationIndex = 0;
-		}
-
-		this.setSelectedTrack(this.tracks.get(destinationIndex));
-	}
-
 	@OnClick(R.id.next)
 	public void onClickNext()
 	{
-		this.goTo(1);
+		if (this.playbackService != null)
+		{
+			this.playbackService.skip(1);
+		}
 	}
 
 	@OnClick(R.id.previous)
 	public void onClickPrevious()
 	{
-		this.goTo(-1);
+		if (this.playbackService != null)
+		{
+			this.playbackService.skip(-1);
+		}
 	}
 
 	@OnClick(R.id.play)
@@ -285,6 +230,32 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 	}
 
 	@Override
+	public void onTrackChanged(Track track)
+	{
+		this.selectedTrack = track;
+
+		//set track information
+		this.textViewArtist.setText(track.artist);
+		this.textViewTrack.setText(track.track);
+		this.textViewAlbum.setText(track.album);
+
+		this.onTrackInformationLoaded(0, 0);
+
+		//load the album art (or nothing)
+		if (TextUtils.isEmpty(track.artUrl))
+		{
+			this.imageViewArt.setImageResource(R.drawable.placeholder_empty);
+			Picasso.with(getActivity()).cancelRequest(this.imageViewArt);
+		}
+		else
+		{
+			Picasso.with(getActivity())
+					.load(Uri.parse(track.artUrl))
+					.into(this.imageViewArt);
+		}
+	}
+
+	@Override
 	public void onTrackInformationLoaded(int progress, int duration)
 	{
 		this.seekBar.setProgress(progress);
@@ -319,7 +290,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 			//register a listener to get updates here when something changed!
 			playbackService.setOnPlaybackListener(PlayerFragment.this);
 			//start playing
-			playbackService.play(selectedTrack);
+			playbackService.play(tracks, selectedTrack);
 		}
 
 		@Override
