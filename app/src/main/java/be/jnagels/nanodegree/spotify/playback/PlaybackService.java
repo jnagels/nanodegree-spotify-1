@@ -413,6 +413,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	/**
 	 * Actually create the notification!
+	 *
 	 * @param bitmap
 	 */
 	private void onImageReadyForNotification(Bitmap bitmap)
@@ -423,6 +424,8 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 
 		final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+		notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+		notificationBuilder.setOngoing(true);
 		notificationBuilder.setSmallIcon(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 		notificationBuilder.setContentTitle(this.currentTrack.track);
 		notificationBuilder.setContentText(this.currentTrack.artist + " - " + this.currentTrack.album);
@@ -451,9 +454,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		}
 
 		//add media style stuff
-		notificationBuilder.setStyle(new NotificationCompat.MediaStyle()
-						.setMediaSession(this.mediaSession.getSessionToken())
-		);
+		final NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
+		mediaStyle.setMediaSession(this.mediaSession.getSessionToken());
+		mediaStyle.setShowCancelButton(true);
+		mediaStyle.setCancelButtonIntent(getPendingIntentForAction(ACTION_STOP));
+		notificationBuilder.setStyle(mediaStyle);
 
 		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 		nm.notify(R.id.notification_id, notificationBuilder.build());
