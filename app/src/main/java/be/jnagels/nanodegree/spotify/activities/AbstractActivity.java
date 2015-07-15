@@ -80,8 +80,14 @@ public abstract class AbstractActivity extends AppCompatActivity
 		Track currentlyTracking = PlaybackService.getCurrentTrack();
 		if (currentlyTracking != null)
 		{
+			if (this.canShowNowPlayingMenuItem())
+			{
+				//something is playing, so show a menu!
+				this.getMenuInflater().inflate(R.menu.menu_playing, menu);
+			}
+
 			//something is playing, so show a menu!
-			this.getMenuInflater().inflate(R.menu.menu_share_track, menu);
+			this.getMenuInflater().inflate(R.menu.menu_share, menu);
 			// Locate MenuItem with ShareActionProvider
 			final MenuItem item = menu.findItem(R.id.menu_item_share);
 
@@ -95,6 +101,23 @@ public abstract class AbstractActivity extends AppCompatActivity
 		}
 
 		return result;
+	}
+
+	protected boolean canShowNowPlayingMenuItem()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		if (item.getItemId() == R.id.menu_now_playing)
+		{
+			final Intent intent = new Intent(this, PlayerActivity.class);
+			startActivity(intent);
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

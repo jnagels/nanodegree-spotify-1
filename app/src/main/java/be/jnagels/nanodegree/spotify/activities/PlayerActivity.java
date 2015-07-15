@@ -37,6 +37,12 @@ public class PlayerActivity extends AbstractActivity
 	}
 
 	@Override
+	protected boolean canShowNowPlayingMenuItem()
+	{
+		return false;
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		if (item.getItemId() == android.R.id.home)

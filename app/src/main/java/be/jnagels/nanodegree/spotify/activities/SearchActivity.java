@@ -3,6 +3,7 @@ package be.jnagels.nanodegree.spotify.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 
@@ -80,5 +81,20 @@ public class SearchActivity extends AbstractActivity implements ArtistsAdapter.O
 		args.putParcelableArrayList(PlayerFragment.param_tracks, tracks);
 		fragment.setArguments(args);
 		fragment.show(getSupportFragmentManager(), "player");
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		//overwrite this here, to open the dialog if we're in multipane mode.
+		//super-class will just open the activity!
+		if (this.isMultipane && item.getItemId() == R.id.menu_now_playing)
+		{
+			//just show the player fragment!
+			final PlayerFragment fragment = new PlayerFragment();
+			fragment.show(getSupportFragmentManager(), "player");
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }
