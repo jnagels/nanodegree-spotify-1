@@ -192,7 +192,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 		this.ensureMediaPlayer();
 
-		if (this.currentTrack != null && this.currentTrack.id == track.id)
+		if (this.currentTrack != null && this.currentTrack.getId() == track.getId())
 		{
 			//we want to start playing the same track, so let's just start it again
 			if (!this.mediaPlayer.isPlaying())
@@ -216,7 +216,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		this.currentTrackList = tracks;
 		try
 		{
-			this.mediaPlayer.setDataSource(this.currentTrack.previewUrl);
+			this.mediaPlayer.setDataSource(this.currentTrack.getPreviewUrl());
 			this.mediaPlayer.prepareAsync();
 			this.showOrUpdateNotification();
 			this.dispatchStatus(STATUS_LOADING);
@@ -387,28 +387,35 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 		//load the album art with picasso.
 		//When finished, use that bitmap to create a notification!
-		Picasso.with(this).load(this.currentTrack.artUrl)
-				.into(new Target()
-					  {
-						  @Override
-						  public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
+		if (!TextUtils.isEmpty(this.currentTrack.getArtUrlLarge()))
+		{
+			Picasso.with(this).load(this.currentTrack.getArtUrlLarge())
+					.into(new Target()
 						  {
-							  onImageReadyForNotification(bitmap);
-						  }
+							  @Override
+							  public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
+							  {
+								  onImageReadyForNotification(bitmap);
+							  }
 
-						  @Override
-						  public void onBitmapFailed(Drawable errorDrawable)
-						  {
-							  //no image to show!
-							  onImageReadyForNotification(null);
-						  }
+							  @Override
+							  public void onBitmapFailed(Drawable errorDrawable)
+							  {
+								  //no image to show!
+								  onImageReadyForNotification(null);
+							  }
 
-						  @Override
-						  public void onPrepareLoad(Drawable placeHolderDrawable)
-						  {
+							  @Override
+							  public void onPrepareLoad(Drawable placeHolderDrawable)
+							  {
+							  }
 						  }
-					  }
-				);
+					);
+		}
+		else
+		{
+			onImageReadyForNotification(null);
+		}
 	}
 
 	/**

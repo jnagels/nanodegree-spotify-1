@@ -50,10 +50,10 @@ public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHol
 		final Context context = holder.itemView.getContext();
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
 
-		if (!TextUtils.isEmpty(item.artUrl))
+		if (!TextUtils.isEmpty(item.getArtUrlLarge()))
 		{
 			Picasso.with(context)
-					.load(Uri.parse(item.artUrl))
+					.load(Uri.parse(item.getArtUrlLarge()))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
@@ -65,8 +65,8 @@ public class TracksAdapter extends ArrayListAdapter<Track, TracksAdapter.ViewHol
 			holder.preview.setImageResource(R.drawable.placeholder_empty);
 		}
 
-		holder.track.setText(item.track);
-		holder.album.setText(item.album);
+		holder.track.setText(item.getTrack());
+		holder.album.setText(item.getAlbum());
 	}
 
 	public final class ViewHolder extends RecyclerView.ViewHolder

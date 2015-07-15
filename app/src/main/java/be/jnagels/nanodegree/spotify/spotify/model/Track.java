@@ -9,13 +9,14 @@ import android.text.TextUtils;
  */
 public class Track implements Parcelable
 {
-	public final String id;
-	public final String artist;
-	public final String track;
-	public final String album;
-	public final String artUrl;
-	public final String previewUrl;
-	public final String spotifyUri;
+	private final String id;
+	private final String artist;
+	private final String track;
+	private final String album;
+	private final String artUrlLarge;
+	private final String artUrlSmall;
+	private final String previewUrl;
+	private final String spotifyUri;
 
 	public Track(String artistName, kaaes.spotify.webapi.android.models.Track track)
 	{
@@ -26,14 +27,56 @@ public class Track implements Parcelable
 		this.previewUrl = track.preview_url;
 		this.spotifyUri = track.uri;
 
-		if (track.album.images.isEmpty())
+		if (track.album != null && track.album.images != null && !track.album.images.isEmpty())
 		{
-			this.artUrl = null;
+			this.artUrlLarge = track.album.images.get(0).url;
+			this.artUrlSmall = track.album.images.get(track.album.images.size()-1).url;
 		}
 		else
 		{
-			this.artUrl = track.album.images.get(0).url;
+			this.artUrlLarge = null;
+			this.artUrlSmall = null;
 		}
+	}
+
+	public String getId()
+	{
+		return id;
+	}
+
+	public String getArtist()
+	{
+		return artist;
+	}
+
+	public String getTrack()
+	{
+		return track;
+	}
+
+	public String getAlbum()
+	{
+		return album;
+	}
+
+	public String getArtUrlLarge()
+	{
+		return artUrlLarge;
+	}
+
+	public String getArtUrlSmall()
+	{
+		return artUrlSmall;
+	}
+
+	public String getPreviewUrl()
+	{
+		return previewUrl;
+	}
+
+	public String getSpotifyUri()
+	{
+		return spotifyUri;
 	}
 
 	@Override
@@ -61,7 +104,8 @@ public class Track implements Parcelable
 		dest.writeString(this.artist);
 		dest.writeString(this.track);
 		dest.writeString(this.album);
-		dest.writeString(this.artUrl);
+		dest.writeString(this.artUrlLarge);
+		dest.writeString(this.artUrlSmall);
 		dest.writeString(this.previewUrl);
 		dest.writeString(this.spotifyUri);
 	}
@@ -72,7 +116,8 @@ public class Track implements Parcelable
 		this.artist = in.readString();
 		this.track = in.readString();
 		this.album = in.readString();
-		this.artUrl = in.readString();
+		this.artUrlLarge = in.readString();
+		this.artUrlSmall = in.readString();
 		this.previewUrl = in.readString();
 		this.spotifyUri = in.readString();
 	}

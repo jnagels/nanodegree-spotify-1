@@ -58,7 +58,7 @@ public class SearchActivity extends AbstractActivity implements ArtistsAdapter.O
 		{
 			final Intent intent = new Intent(this, ArtistTopTracksActivity.class);
 			intent.putExtras(arguments);
-			intent.putExtra(ArtistTopTracksActivity.EXTRA_SUBTITLE, artist.name);
+			intent.putExtra(ArtistTopTracksActivity.EXTRA_SUBTITLE, artist.getName());
 
 			startActivity(intent);
 

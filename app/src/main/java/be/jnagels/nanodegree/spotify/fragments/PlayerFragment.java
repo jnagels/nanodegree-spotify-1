@@ -235,14 +235,14 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		this.selectedTrack = track;
 
 		//set track information
-		this.textViewArtist.setText(track.artist);
-		this.textViewTrack.setText(track.track);
-		this.textViewAlbum.setText(track.album);
+		this.textViewArtist.setText(track.getArtist());
+		this.textViewTrack.setText(track.getTrack());
+		this.textViewAlbum.setText(track.getAlbum());
 
 		this.onTrackInformationLoaded(0, 0);
 
 		//load the album art (or nothing)
-		if (TextUtils.isEmpty(track.artUrl))
+		if (TextUtils.isEmpty(track.getArtUrlLarge()))
 		{
 			this.imageViewArt.setImageResource(R.drawable.placeholder_empty);
 			Picasso.with(getActivity()).cancelRequest(this.imageViewArt);
@@ -250,7 +250,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		else
 		{
 			Picasso.with(getActivity())
-					.load(Uri.parse(track.artUrl))
+					.load(Uri.parse(track.getArtUrlLarge()))
 					.into(this.imageViewArt);
 		}
 	}

@@ -199,7 +199,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		if (openMode == OPEN_MODE_FRAGMENT)
 		{
 			//if we're opening in a detail fragment, we want to "select" the clicked artist.
-			this.adapter.setSelectedArtistId(artist.id);
+			this.adapter.setSelectedArtistId(artist.getId());
 		}
 
 		return openMode;

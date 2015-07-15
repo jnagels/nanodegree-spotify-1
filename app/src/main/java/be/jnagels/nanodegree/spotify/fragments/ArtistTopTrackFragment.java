@@ -113,7 +113,7 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 
 		final HashMap<String,Object> parameters = new HashMap<>();
 		parameters.put("country", "BE");
-		SpotifyInstance.get(getActivity()).getArtistTopTrack(this.artist.id, parameters, this.callback);
+		SpotifyInstance.get(getActivity()).getArtistTopTrack(this.artist.getId(), parameters, this.callback);
 	}
 
 	private void onDataLoaded(ArrayList<Track> tracks)
@@ -139,7 +139,7 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 			final ArrayList<Track> tracks = new ArrayList<>();
 			for(kaaes.spotify.webapi.android.models.Track track : data.tracks)
 			{
-				tracks.add(new Track(artist.name, track));
+				tracks.add(new Track(artist.getName(), track));
 			}
 			onDataLoaded(tracks);
 		}

@@ -74,10 +74,10 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 		final int size = holder.itemView.getResources().getDimensionPixelSize(R.dimen.album_preview_size);
 		final Context context = holder.itemView.getContext();
 
-		if (!TextUtils.isEmpty(item.artUrl))
+		if (!TextUtils.isEmpty(item.getArtUrlSmall()))
 		{
 			Picasso.with(context)
-					.load(Uri.parse(item.artUrl))
+					.load(Uri.parse(item.getArtUrlSmall()))
 					.placeholder(R.drawable.placeholder)
 					.resize(size, size)
 					.centerCrop()
@@ -89,9 +89,9 @@ public class ArtistsAdapter extends ArrayListAdapter<Artist, ArtistsAdapter.View
 			holder.preview.setImageResource(R.drawable.placeholder_empty);
 		}
 
-		holder.title.setText(item.name);
+		holder.title.setText(item.getName());
 
-		final boolean isSelected = TextUtils.equals(this.selectedArtistId, item.id);
+		final boolean isSelected = TextUtils.equals(this.selectedArtistId, item.getId());
 		holder.itemView.setBackgroundColor(context.getResources().getColor(isSelected ? R.color.accent : android.R.color.transparent));
 	}
 
