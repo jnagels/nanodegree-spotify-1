@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
+import android.text.TextUtils;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import be.jnagels.nanodegree.spotify.R;
+import be.jnagels.nanodegree.spotify.activities.PlayerActivity;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 
 /**
@@ -41,7 +43,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public static final String ACTION_NEXT = BASE_ACTION + "NEXT";
 	public static final String ACTION_PREVIOUS = BASE_ACTION + "PREVIOUS";
 
-	@IntDef({STATUS_LOADING, STATUS_PLAYING, STATUS_PAUSED, STATUS_ERROR, STATUS_FINISHED})
+	@IntDef({STATUS_LOADING, STATUS_PLAYING, STATUS_PAUSED, STATUS_ERROR, STATUS_FINISHED, STATUS_STOPPED})
 	public @interface PlaybackStatus {}
 
 	public final static int STATUS_LOADING = 0;
@@ -49,6 +51,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public final static int STATUS_PAUSED = 2;
 	public final static int STATUS_ERROR = 3;
 	public final static int STATUS_FINISHED = 4;
+	public final static int STATUS_STOPPED = 5;
 
 	private final static int MSG_PROGRESS = 0;
 
@@ -81,6 +84,8 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	private MediaPlayer mediaPlayer = null;
 	private MediaSessionCompat mediaSession;
 
+	@PlaybackStatus
+	private int currentPlaybackStatus = -1;
 	private Track currentTrack = null;
 	private ArrayList<Track> currentTrackList = null;
 
@@ -137,6 +142,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	{
 		super.onDestroy();
 
+		this.destroyInternal();
+	}
+
+	private void destroyInternal()
+	{
 		this.hideNotification();
 
 		if (this.mediaSession != null)
@@ -162,6 +172,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public void setOnPlaybackListener(OnPlaybackListener onPlaybackListener)
 	{
 		this.onPlaybackListener = onPlaybackListener;
+
+		//let the listener know which track we're playing (if we're playing)
+		if (this.onPlaybackListener != null)
+		{
+			if (this.isPlaying() && this.currentTrack != null)
+			{
+				this.onPlaybackListener.onTrackChanged(this.currentTrack);
+			}
+			this.dispatchStatus(this.currentPlaybackStatus);
+		}
 	}
 
 	/**
@@ -271,6 +291,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	 */
 	public void stop()
 	{
+		this.dispatchStatus(STATUS_STOPPED);
+		this.destroyInternal();
+
 		this.handler.removeMessages(MSG_PROGRESS);
 		this.stopSelf();
 	}
@@ -338,6 +361,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	private void dispatchStatus(@PlaybackStatus int status)
 	{
+		this.currentPlaybackStatus = status;
 		//update the notification to reflect the current state :)
 		this.showOrUpdateNotification();
 		if (this.onPlaybackListener != null)
@@ -375,6 +399,12 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	{
 		this.dispatchStatus(STATUS_FINISHED);
 		this.handler.removeMessages(MSG_PROGRESS);
+
+		if (this.currentTrackList.size() > 1)
+		{
+			//play the next track!
+			this.skip(1);
+		}
 	}
 
 	/**
@@ -382,6 +412,12 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	 */
 	private void showOrUpdateNotification()
 	{
+		if (this.currentTrack == null)
+		{
+			//can't do anything without a track here :)
+			return ;
+		}
+
 		//We could optimize here by saving the bitmap in memory here (if the old ArtUrl is the same
 		// as the new one), but we count on Picasso to do this for us :)
 
@@ -429,13 +465,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		//only support next/previous if there is more than 1 track in the tracklist
 		final boolean showNextAndPreviousButtons = this.currentTrackList.size() > 1;
 
+		final Intent activityIntent = new Intent(this, PlayerActivity.class);
+		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, activityIntent, 0);
 
 		final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 		notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-		notificationBuilder.setOngoing(true);
+		notificationBuilder.setContentIntent(contentIntent);
+		notificationBuilder.setDeleteIntent(getPendingIntentForAction(ACTION_STOP));
 		notificationBuilder.setSmallIcon(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-		notificationBuilder.setContentTitle(this.currentTrack.track);
-		notificationBuilder.setContentText(this.currentTrack.artist + " - " + this.currentTrack.album);
+		notificationBuilder.setContentTitle(this.currentTrack.getTrack());
+		notificationBuilder.setContentText(this.currentTrack.getArtist() + " - " + this.currentTrack.getAlbum());
 		notificationBuilder.setLargeIcon(bitmap);
 
 		//previous button (if necessary)

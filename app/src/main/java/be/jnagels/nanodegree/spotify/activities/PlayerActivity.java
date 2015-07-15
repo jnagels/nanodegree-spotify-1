@@ -19,7 +19,10 @@ public class PlayerActivity extends AbstractActivity
 		if (getSupportFragmentManager().findFragmentByTag("player") == null)
 		{
 			final Bundle args = new Bundle();
-			args.putAll(getIntent().getExtras());
+			if (getIntent().getExtras() != null)
+			{
+				args.putAll(getIntent().getExtras());
+			}
 
 			final Fragment fragment = new PlayerFragment();
 			fragment.setArguments(args);

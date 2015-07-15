@@ -72,8 +72,11 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 
 		this.setStyle(STYLE_NO_TITLE, 0);
 
-		//read the tracklist from the arguments. This should always be available.
-		this.tracks = getArguments().getParcelableArrayList(param_tracks);
+		if (this.getArguments() != null)
+		{
+			//read the tracklist from the arguments.
+			this.tracks = getArguments().getParcelableArrayList(param_tracks);
+		}
 
 		if (this.tracks == null)
 		{
@@ -95,8 +98,16 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		final Track selectedTrack;
 		if (savedInstanceState == null)
 		{
-			//read from arguments
-			selectedTrack = getArguments().getParcelable(param_selected_track);
+			if (getArguments() != null)
+			{
+				//read from arguments
+				selectedTrack = getArguments().getParcelable(param_selected_track);
+			}
+			else
+			{
+				//just show the currently playing information. Get it from the service!
+				selectedTrack = null;
+			}
 		}
 		else
 		{
@@ -105,7 +116,7 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		}
 
 		//just to be safe :-)
-		if (this.tracks.isEmpty())
+		if (selectedTrack != null && this.tracks.isEmpty())
 		{
 			this.tracks.add(selectedTrack);
 		}
@@ -226,6 +237,16 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 				this.seekBar.setProgress(this.seekBar.getMax());
 				this.textViewProgress.setText(this.textViewDuration.getText());
 				break;
+			case PlaybackService.STATUS_STOPPED:
+				if (this.getShowsDialog())
+				{
+					this.dismiss();
+				}
+				else if (getActivity() != null)
+				{
+					getActivity().finish();
+				}
+				break;
 		}
 	}
 
@@ -289,8 +310,12 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 			playbackService = ((PlaybackService.LocalBinder)service).getService();
 			//register a listener to get updates here when something changed!
 			playbackService.setOnPlaybackListener(PlayerFragment.this);
-			//start playing
-			playbackService.play(tracks, selectedTrack);
+
+			if (!tracks.isEmpty() && selectedTrack != null)
+			{
+				//start playing
+				playbackService.play(tracks, selectedTrack);
+			}
 		}
 
 		@Override
