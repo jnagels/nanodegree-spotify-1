@@ -212,7 +212,13 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public void setOnPlaybackListener(OnPlaybackListener onPlaybackListener)
 	{
 		this.onPlaybackListener = onPlaybackListener;
+	}
 
+	/**
+	 * This will do some callbacks to the {@link #onPlaybackListener}
+	 */
+	public void askForCurrentlyPlayingTrack()
+	{
 		//let the listener know which track we're playing (if we're playing)
 		if (this.onPlaybackListener != null)
 		{

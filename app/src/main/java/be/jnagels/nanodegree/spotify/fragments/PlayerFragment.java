@@ -316,6 +316,11 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 				//start playing
 				playbackService.play(tracks, selectedTrack);
 			}
+			else
+			{
+				//ask which track is playing!
+				playbackService.askForCurrentlyPlayingTrack();
+			}
 		}
 
 		@Override
