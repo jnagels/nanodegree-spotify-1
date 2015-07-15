@@ -1,16 +1,22 @@
 package be.jnagels.nanodegree.spotify.fragments;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import be.jnagels.nanodegree.spotify.R;
@@ -45,10 +51,12 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 	}
 
 	private final static String param_artist = "artist";
+	private final static String param_country_code = "country_code";
 
 	//data
 	private Artist artist;
 	private TracksAdapter adapter;
+	private String countryCode;
 
 	//views
 	@Bind(R.id.progressview)
@@ -63,6 +71,16 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 		super.onCreate(savedInstanceState);
 
 		this.artist = getArguments().getParcelable(param_artist);
+
+		if (savedInstanceState == null)
+		{
+			this.countryCode = getArguments().getString(param_country_code, "BE");
+		}
+		else
+		{
+			this.countryCode = savedInstanceState.getString(param_country_code, "BE");
+		}
+
 		this.adapter = new TracksAdapter();
 
 		if (savedInstanceState != null)
@@ -70,6 +88,8 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 			final ArrayList<Track> tracks = savedInstanceState.getParcelableArrayList("tracks");
 			this.adapter.setData(tracks);
 		}
+
+		this.setHasOptionsMenu(true);
 	}
 
 	@Nullable
@@ -100,10 +120,54 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 	}
 
 	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+	{
+		super.onCreateOptionsMenu(menu, inflater);
+
+		inflater.inflate(R.menu.menu_country_code, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		if (item.getItemId() == R.id.menu_country)
+		{
+			this.showCountryCodeDialog();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void showCountryCodeDialog()
+	{
+		final String[] countryCodes = getResources().getStringArray(R.array.country_codes);
+
+		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setSingleChoiceItems(
+				R.array.country_names,
+				Arrays.binarySearch(countryCodes, this.countryCode),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						if (which >= 0)
+						{
+							countryCode = countryCodes[which];
+							fetchTopTracks();
+						}
+						dialog.dismiss();
+					}
+				});
+		builder.setTitle(R.string.change_country);
+		builder.show();
+	}
+
+	@Override
 	public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
 		outState.putParcelableArrayList("tracks", this.adapter.getData());
+		outState.putString(param_country_code, this.countryCode);
 	}
 
 	private void fetchTopTracks()
@@ -112,7 +176,7 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 		recyclerView.setVisibility(View.GONE);
 
 		final HashMap<String,Object> parameters = new HashMap<>();
-		parameters.put("country", "BE");
+		parameters.put("country", this.countryCode);
 		SpotifyInstance.get(getActivity()).getArtistTopTrack(this.artist.getId(), parameters, this.callback);
 	}
 

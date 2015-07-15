@@ -2,8 +2,11 @@ package be.jnagels.nanodegree.spotify.playback;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -12,6 +15,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
@@ -44,6 +48,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public static final String ACTION_PREVIOUS = BASE_ACTION + "PREVIOUS";
 
 	public static final String BROADCAST_TRACK_CHANGED = "be.jnagels.nanodegree.spotify.broadcast.TRACK_CHANGED";
+	public static final String BROADCAST_SETTINGS_CHANGED = "be.jnagels.nanodegree.spotify.broadcast.SETTINGS_CHANGED";
 
 	@IntDef({STATUS_LOADING, STATUS_PLAYING, STATUS_PAUSED, STATUS_ERROR, STATUS_FINISHED, STATUS_STOPPED})
 	public @interface PlaybackStatus {}
@@ -156,6 +161,15 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	}
 
 	@Override
+	public void onCreate()
+	{
+		super.onCreate();
+
+		this.registerReceiver(this.settingsChangedBroadcastReceiver, new IntentFilter(BROADCAST_SETTINGS_CHANGED));
+		this.isSettingsChangedReceiverRegistered = true;
+	}
+
+	@Override
 	public void onDestroy()
 	{
 		super.onDestroy();
@@ -165,6 +179,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
 	private void destroyInternal()
 	{
+		if (this.isSettingsChangedReceiverRegistered)
+		{
+			this.isSettingsChangedReceiverRegistered = false;
+			this.unregisterReceiver(this.settingsChangedBroadcastReceiver);
+		}
 		this.hideNotification();
 
 		if (this.mediaSession != null)
@@ -502,34 +521,39 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		notificationBuilder.setContentText(this.currentTrack.getArtist() + " - " + this.currentTrack.getAlbum());
 		notificationBuilder.setLargeIcon(bitmap);
 
-		//previous button (if necessary)
-		if (showNextAndPreviousButtons)
-		{
-			notificationBuilder.addAction(android.R.drawable.ic_media_previous, getString(R.string.previous), getPendingIntentForAction(ACTION_PREVIOUS));
-		}
+		final boolean hideMusicControls = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("hide_music_controls", false);
 
-		//show pause or play depending on the current state!
-		if (this.isPlaying())
+		if (!hideMusicControls)
 		{
-			notificationBuilder.addAction(android.R.drawable.ic_media_pause, getString(R.string.pause), getPendingIntentForAction(ACTION_PAUSE));
-		}
-		else
-		{
-			notificationBuilder.addAction(android.R.drawable.ic_media_play, getString(R.string.play), getPendingIntentForAction(ACTION_PLAY));
-		}
+			//previous button (if necessary)
+			if (showNextAndPreviousButtons)
+			{
+				notificationBuilder.addAction(android.R.drawable.ic_media_previous, getString(R.string.previous), getPendingIntentForAction(ACTION_PREVIOUS));
+			}
 
-		//next button (if necessary)
-		if (showNextAndPreviousButtons)
-		{
-			notificationBuilder.addAction(android.R.drawable.ic_media_next, getString(R.string.next), getPendingIntentForAction(ACTION_NEXT));
-		}
+			//show pause or play depending on the current state!
+			if (this.isPlaying())
+			{
+				notificationBuilder.addAction(android.R.drawable.ic_media_pause, getString(R.string.pause), getPendingIntentForAction(ACTION_PAUSE));
+			}
+			else
+			{
+				notificationBuilder.addAction(android.R.drawable.ic_media_play, getString(R.string.play), getPendingIntentForAction(ACTION_PLAY));
+			}
 
-		//add media style stuff
-		final NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
-		mediaStyle.setMediaSession(this.mediaSession.getSessionToken());
-		mediaStyle.setShowCancelButton(true);
-		mediaStyle.setCancelButtonIntent(getPendingIntentForAction(ACTION_STOP));
-		notificationBuilder.setStyle(mediaStyle);
+			//next button (if necessary)
+			if (showNextAndPreviousButtons)
+			{
+				notificationBuilder.addAction(android.R.drawable.ic_media_next, getString(R.string.next), getPendingIntentForAction(ACTION_NEXT));
+			}
+
+			//add media style stuff
+			final NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
+			mediaStyle.setMediaSession(this.mediaSession.getSessionToken());
+			mediaStyle.setShowCancelButton(true);
+			mediaStyle.setCancelButtonIntent(getPendingIntentForAction(ACTION_STOP));
+			notificationBuilder.setStyle(mediaStyle);
+		}
 
 		final NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 		nm.notify(R.id.notification_id, notificationBuilder.build());
@@ -591,6 +615,15 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		}
 
 
+	};
+
+	private boolean isSettingsChangedReceiverRegistered = false;
+	private final BroadcastReceiver settingsChangedBroadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent)
+		{
+			showOrUpdateNotification();
+		}
 	};
 
 	/**

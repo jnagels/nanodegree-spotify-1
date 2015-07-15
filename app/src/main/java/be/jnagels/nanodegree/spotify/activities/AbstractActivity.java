@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
@@ -44,7 +45,7 @@ public abstract class AbstractActivity extends AppCompatActivity
 
 		//set the subtitle if there is one!
 		final String subtitle = getIntent().getStringExtra(EXTRA_SUBTITLE);
-		if (!TextUtils.isEmpty(title))
+		if (!TextUtils.isEmpty(subtitle))
 		{
 			this.getSupportActionBar().setSubtitle(subtitle);
 		}
@@ -100,12 +101,29 @@ public abstract class AbstractActivity extends AppCompatActivity
 			shareActionProvider.setShareIntent(shareIntent);
 		}
 
+		//hide music controls menu items
+		this.getMenuInflater().inflate(R.menu.menu_toggle_controls, menu);
+		final MenuItem menuItem = menu.findItem(R.id.menu_hide_music_controls);
+		menuItem.setChecked(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("hide_music_controls", false));
+
 		return result;
 	}
 
 	protected boolean canShowNowPlayingMenuItem()
 	{
 		return true;
+	}
+
+	private void onHideMusicControlsClicked(MenuItem menuItem)
+	{
+		final boolean hideMusicControls = menuItem.isChecked();
+		PreferenceManager.getDefaultSharedPreferences(this)
+				.edit()
+				.putBoolean("hide_music_controls", hideMusicControls)
+				.commit();
+
+		//send a broadcast that the settings have changed!
+		sendBroadcast(new Intent(PlaybackService.BROADCAST_SETTINGS_CHANGED));
 	}
 
 	@Override
@@ -115,6 +133,12 @@ public abstract class AbstractActivity extends AppCompatActivity
 		{
 			final Intent intent = new Intent(this, PlayerActivity.class);
 			startActivity(intent);
+			return true;
+		}
+		if (item.getItemId() == R.id.menu_hide_music_controls)
+		{
+			item.setChecked(!item.isChecked());
+			onHideMusicControlsClicked(item);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
