@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
@@ -17,6 +16,7 @@ import android.view.MenuItem;
 import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.playback.PlaybackService;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
+import be.jnagels.nanodegree.spotify.utils.SettingsUtils;
 
 /**
  * Will set the title and subtitle if given :-)
@@ -92,6 +92,7 @@ public abstract class AbstractActivity extends AppCompatActivity
 			// Locate MenuItem with ShareActionProvider
 			final MenuItem item = menu.findItem(R.id.menu_item_share);
 
+			//create share intent
 			final Intent shareIntent = new Intent(Intent.ACTION_SEND);
 			shareIntent.setType("text/plain");
 			shareIntent.putExtra(Intent.EXTRA_TEXT, currentlyTracking.getSpotifyUri());
@@ -104,7 +105,7 @@ public abstract class AbstractActivity extends AppCompatActivity
 		//hide music controls menu items
 		this.getMenuInflater().inflate(R.menu.menu_toggle_controls, menu);
 		final MenuItem menuItem = menu.findItem(R.id.menu_hide_music_controls);
-		menuItem.setChecked(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("hide_music_controls", false));
+		menuItem.setChecked(SettingsUtils.isHideMusicControls(this));
 
 		return result;
 	}
@@ -117,10 +118,7 @@ public abstract class AbstractActivity extends AppCompatActivity
 	private void onHideMusicControlsClicked(MenuItem menuItem)
 	{
 		final boolean hideMusicControls = menuItem.isChecked();
-		PreferenceManager.getDefaultSharedPreferences(this)
-				.edit()
-				.putBoolean("hide_music_controls", hideMusicControls)
-				.commit();
+		SettingsUtils.setHideMusicControls(this, hideMusicControls);
 
 		//send a broadcast that the settings have changed!
 		sendBroadcast(new Intent(PlaybackService.BROADCAST_SETTINGS_CHANGED));

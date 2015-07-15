@@ -15,7 +15,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.activities.PlayerActivity;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
+import be.jnagels.nanodegree.spotify.utils.SettingsUtils;
 
 /**
  * Created by jelle on 12/07/15.
@@ -527,7 +527,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		notificationBuilder.setContentText(this.currentTrack.getArtist() + " - " + this.currentTrack.getAlbum());
 		notificationBuilder.setLargeIcon(bitmap);
 
-		final boolean hideMusicControls = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("hide_music_controls", false);
+		final boolean hideMusicControls = SettingsUtils.isHideMusicControls(this);
 
 		if (!hideMusicControls)
 		{
