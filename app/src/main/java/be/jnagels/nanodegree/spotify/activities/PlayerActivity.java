@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 
+import be.jnagels.nanodegree.spotify.R;
 import be.jnagels.nanodegree.spotify.fragments.PlayerFragment;
 
 /**
@@ -27,7 +28,7 @@ public class PlayerActivity extends AbstractActivity
 			final Fragment fragment = new PlayerFragment();
 			fragment.setArguments(args);
 			getSupportFragmentManager().beginTransaction()
-					.replace(android.R.id.content, fragment, "player")
+					.replace(R.id.placeholder, fragment, "player")
 					.commit();
 		}
 

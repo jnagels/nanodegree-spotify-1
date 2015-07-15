@@ -25,7 +25,6 @@ public class SearchActivity extends AbstractActivity implements ArtistsAdapter.O
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		this.setContentView(R.layout.activity_search);
 
 		this.isMultipane = findViewById(R.id.placeholder_detail) != null;
 
@@ -36,6 +35,12 @@ public class SearchActivity extends AbstractActivity implements ArtistsAdapter.O
 					.replace(R.id.placeholder_master, new SearchFragment(), "master")
 					.commit();
 		}
+	}
+
+	@Override
+	protected int getLayoutResourceId()
+	{
+		return R.layout.activity_search;
 	}
 
 	@Override

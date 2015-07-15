@@ -8,7 +8,7 @@
     <include layout="@layout/toolbar"/>
 
     <FrameLayout
-        android:id="@+id/placeholder_master"
+        android:id="@+id/placeholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

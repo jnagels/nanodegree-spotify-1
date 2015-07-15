@@ -43,6 +43,8 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 	public static final String ACTION_NEXT = BASE_ACTION + "NEXT";
 	public static final String ACTION_PREVIOUS = BASE_ACTION + "PREVIOUS";
 
+	public static final String BROADCAST_TRACK_CHANGED = "be.jnagels.nanodegree.spotify.broadcast.TRACK_CHANGED";
+
 	@IntDef({STATUS_LOADING, STATUS_PLAYING, STATUS_PAUSED, STATUS_ERROR, STATUS_FINISHED, STATUS_STOPPED})
 	public @interface PlaybackStatus {}
 
@@ -75,6 +77,22 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		 */
 		void onPlaybackStatusChanged(@PlaybackStatus int status);
 	}
+
+	/**
+	 * @return the currently playing track, or null.
+	 */
+	public static Track getCurrentTrack()
+	{
+		return sCurrentTrack;
+	}
+
+	/**
+	 * Not sure if this is the best way. It's only some attributes, so it's no big deal because
+	 * no context or something is leaked. And when the app is closed by the system, the process
+	 * is killed anyway, and all static stuff is freed.
+	 */
+	private static Track sCurrentTrack = null;
+
 
 	// Binder given to clients
 	private final IBinder binder = new LocalBinder();
@@ -162,6 +180,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		}
 		this.currentTrackList = null;
 		this.currentTrack = null;
+		sCurrentTrack = null;
+
+		this.sendBroadcast(new Intent(BROADCAST_TRACK_CHANGED));
 	}
 
 	/**
@@ -234,6 +255,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 		//save track and tracklist
 		this.currentTrack = track;
 		this.currentTrackList = tracks;
+		sCurrentTrack = this.currentTrack;
+		this.sendBroadcast(new Intent(BROADCAST_TRACK_CHANGED));
+
+		//prepare the audio preview
 		try
 		{
 			this.mediaPlayer.setDataSource(this.currentTrack.getPreviewUrl());

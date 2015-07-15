@@ -2,13 +2,14 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
 
     </style>
 
 
     <style name="AppTheme" parent="BaseAppTheme">
         <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
     </style>
 
 
