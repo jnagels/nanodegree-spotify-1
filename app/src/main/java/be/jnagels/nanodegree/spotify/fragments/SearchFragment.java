@@ -27,6 +27,7 @@ import be.jnagels.nanodegree.spotify.spotify.SpotifyCallback;
 import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 import be.jnagels.nanodegree.spotify.utils.HorizontalDividerItemDecoration;
+import be.jnagels.nanodegree.spotify.utils.SystemInformationUtils;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
@@ -187,9 +188,14 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		this.recyclerView.setVisibility(View.GONE);
 		this.adapter.setData(null);
 
+		String toastMessage = getString(R.string.artists_error, message);
+		if (!SystemInformationUtils.hasInternetConnection(getActivity()))
+		{
+			toastMessage += "\n" + getString(R.string.error_no_connection);
+		}
 		Toast.makeText(
 				getActivity(),
-				getString(R.string.artists_error, message),
+				toastMessage,
 				Toast.LENGTH_LONG).show();
 	}
 

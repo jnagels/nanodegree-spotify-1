@@ -26,6 +26,7 @@ import be.jnagels.nanodegree.spotify.spotify.SpotifyInstance;
 import be.jnagels.nanodegree.spotify.spotify.model.Artist;
 import be.jnagels.nanodegree.spotify.spotify.model.Track;
 import be.jnagels.nanodegree.spotify.utils.HorizontalDividerItemDecoration;
+import be.jnagels.nanodegree.spotify.utils.SystemInformationUtils;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import kaaes.spotify.webapi.android.models.Tracks;
@@ -221,7 +222,12 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 		protected void onFailure(RetrofitError error)
 		{
 			progressView.setVisibility(View.GONE);
-			Toast.makeText(getActivity(), R.string.top_tracks_error, Toast.LENGTH_SHORT).show();
+			String toastMessage = getString(R.string.top_tracks_error);
+			if (!SystemInformationUtils.hasInternetConnection(getActivity()))
+			{
+				toastMessage += "\n" + getString(R.string.error_no_connection);
+			}
+			Toast.makeText(getActivity(), toastMessage, Toast.LENGTH_SHORT).show();
 		}
 	};
 }

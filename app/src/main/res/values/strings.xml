@@ -17,6 +17,7 @@
     <string name="now_playing">Now Playing</string>
     <string name="change_country">Change Country</string>
     <string name="hide_music_controls">Hide Media Controls</string>
+    <string name="error_no_connection">Please check your internet connection.</string>
 
     <string-array name="country_codes">
         <item>AF</item>
