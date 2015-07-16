@@ -72,22 +72,9 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 
 		this.artist = getArguments().getParcelable(param_artist);
 
-		if (savedInstanceState == null)
-		{
-			this.countryCode = getArguments().getString(param_country_code, "BE");
-		}
-		else
-		{
-			this.countryCode = savedInstanceState.getString(param_country_code, "BE");
-		}
-
 		this.adapter = new TracksAdapter();
 
-		if (savedInstanceState != null)
-		{
-			final ArrayList<Track> tracks = savedInstanceState.getParcelableArrayList("tracks");
-			this.adapter.setData(tracks);
-		}
+
 
 		this.setHasOptionsMenu(true);
 	}
@@ -105,9 +92,31 @@ public class ArtistTopTrackFragment extends Fragment implements TracksAdapter.On
 		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
 
-		this.fetchTopTracks();
-
 		return view;
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+
+		if (savedInstanceState == null)
+		{
+			this.countryCode = getArguments().getString(param_country_code, "BE");
+		}
+		else
+		{
+			this.countryCode = savedInstanceState.getString(param_country_code, "BE");
+
+			final ArrayList<Track> tracks = savedInstanceState.getParcelableArrayList("tracks");
+			this.onDataLoaded(tracks);
+		}
+
+		if (this.adapter.getData().isEmpty())
+		{
+			//fetch the top tracks if it isn't empty yet!
+			this.fetchTopTracks();
+		}
 	}
 
 	@Override
