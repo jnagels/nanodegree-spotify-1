@@ -121,6 +121,11 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	 */
 	private void searchApi()
 	{
+		if (this.editText == null)
+		{
+			//extra defensive nullpointer check.
+			return ;
+		}
 		final String query = this.editText.getText().toString();
 		if (TextUtils.equals(this.query, query))
 		{
