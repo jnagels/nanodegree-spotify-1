@@ -122,6 +122,11 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 		}
 		this.selectedTrack = selectedTrack;
 
+		if (this.selectedTrack != null)
+		{
+			updateViewsForTrack(this.selectedTrack);
+		}
+
 		return view;
 	}
 
@@ -254,13 +259,18 @@ public class PlayerFragment extends DialogFragment implements SeekBar.OnSeekBarC
 	public void onTrackChanged(Track track)
 	{
 		this.selectedTrack = track;
+		//update the views!
+		this.updateViewsForTrack(track);
+		//set correct progress
+		this.onTrackInformationLoaded(0, 0);
+	}
 
+	private void updateViewsForTrack(Track track)
+	{
 		//set track information
 		this.textViewArtist.setText(track.getArtist());
 		this.textViewTrack.setText(track.getTrack());
 		this.textViewAlbum.setText(track.getAlbum());
-
-		this.onTrackInformationLoaded(0, 0);
 
 		//load the album art (or nothing)
 		if (TextUtils.isEmpty(track.getArtUrlLarge()))

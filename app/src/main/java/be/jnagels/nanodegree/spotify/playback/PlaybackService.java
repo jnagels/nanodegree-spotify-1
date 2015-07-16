@@ -267,6 +267,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 				this.dispatchTrackInformation();
 				this.dispatchStatus(STATUS_PLAYING);
 			}
+			else
+			{
+				this.dispatchTrackInformation();
+				this.dispatchStatus(STATUS_PLAYING);
+			}
 
 			return;
 		}
