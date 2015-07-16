@@ -89,6 +89,8 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 		this.recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(getResources()));
 		this.recyclerView.setAdapter(this.adapter);
 
+		//set the text before adding textChangedListeners so the onTextChanged() callback isn't
+		//called when rotating devices.
 		if (!TextUtils.isEmpty(this.query))
 		{
 			this.editText.setText(this.query);
