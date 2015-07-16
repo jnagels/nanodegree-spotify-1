@@ -107,6 +107,7 @@ public class SearchFragment extends Fragment implements TextView.OnEditorActionL
 	{
 		super.onDestroyView();
 		ButterKnife.unbind(this);
+		this.handler.removeMessages(MSG_SEARCH);
 	}
 
 	@Override
